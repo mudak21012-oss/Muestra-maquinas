@@ -5,13 +5,12 @@
   <title>Catálogo de Impresoras — simple + HUB de comparación</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    /* =========
-       TEMA OSCURO SIMPLE
-       ========= */
+    /* ========= TEMA OSCURO SIMPLE ========= */
     :root{
       --bg:#0b0f17; --bg-grad: radial-gradient(70vw 40vh at 20% -10%, #132133 0%, transparent 60%), var(--bg);
       --panel:#0e1421; --line:#1f2937; --text:#e6ecff; --muted:#a3acb9;
       --radius:12px; --radius-lg:16px; --shadow:0 6px 28px rgba(0,0,0,.35);
+      --primary-col:#131d2f;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -19,109 +18,111 @@
     a{color:inherit}
     :focus-visible{outline:0;box-shadow:0 0 0 3px rgba(122,162,255,.35);border-radius:8px}
 
-    /* Header + Controles */
+    /* Header minimal */
     header{position:sticky;top:0;z-index:10;background:rgba(11,15,23,.85);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
-    h1{margin:12px; text-align:center; font-size:clamp(20px,4vw,36px); font-weight:800;
+    h1{margin:12px;text-align:center;font-size:clamp(20px,4vw,36px);font-weight:800;
        background:linear-gradient(90deg,#9ae6ff 0%, #7aa2ff 40%, #00ffd0 80%);
-       -webkit-background-clip:text; background-clip:text; color:transparent;}
-    .toolbar{display:grid;grid-template-columns:1.4fr .9fr .9fr .9fr auto;gap:.6rem;align-items:center;padding:10px 12px;border-top:1px dashed rgba(255,255,255,.06)}
-    .input,.select{width:100%;padding:.48rem .6rem;background:#0d1422;color:var(--text);border:1px solid #223047;border-radius:10px}
-    .status{justify-self:end;font-size:.85rem;color:var(--text);background:#0b1324;border:1px solid var(--line);border-radius:10px;padding:.25rem .5rem}
+       -webkit-background-clip:text;background-clip:text;color:transparent;}
 
     /* Layout principal */
     .layout{display:grid;grid-template-columns:320px 1fr;gap:12px;padding:12px}
     @media (max-width:960px){.layout{grid-template-columns:1fr}}
 
     /* Lista rápida */
-    .quick{border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--panel);box-shadow:var(--shadow);overflow:hidden}
-    .quick header{padding:10px 12px;border-bottom:1px solid var(--line);background:rgba(18,24,38,.6)}
-    .quick .meta{color:var(--muted);font-size:12px}
+    .quick{border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--panel);box-shadow:var(--shadow);overflow:hidden;display:grid;grid-template-rows:auto 1fr}
+    .quick header{padding:8px 10px;border-bottom:1px solid var(--line);background:rgba(18,24,38,.6)}
+    .q-top{display:flex;align-items:center;gap:8px;justify-content:space-between;margin-bottom:6px}
+    .q-title{font-weight:700}
+    .status{font-size:.8rem;color:var(--text);background:#0b1324;border:1px solid var(--line);border-radius:10px;padding:.15rem .45rem;white-space:nowrap}
+    .input{width:100%;padding:.48rem .6rem;background:#0d1422;color:var(--text);border:1px solid #223047;border-radius:10px}
     .quick ul{list-style:none;margin:0;padding:0;max-height:60vh;overflow:auto}
     .quick li{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px dashed rgba(255,255,255,.06);cursor:pointer}
     .quick li[aria-current="true"]{background:#0f172a}
     .name{font-size:.95rem}
     .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
     .chip{display:inline-flex;padding:.05rem .4rem;border-radius:999px;border:1px solid var(--line);background:#141a25;font-size:.75rem;color:#cfd8ea}
-    .row-actions{display:flex;gap:8px;align-items:center}
     .price{font-weight:700;font-size:.95rem}
-    .btn{display:inline-flex;align-items:center;gap:.25rem;padding:.4rem .6rem;border:1px solid #2b3b57;border-radius:999px;background:linear-gradient(135deg,#0f172a,#111827);color:var(--text);cursor:pointer}
 
     /* Panel derecha */
     .panel{border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--panel);box-shadow:var(--shadow)}
     .panel .panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
     .panel .panel-body{padding:12px}
+    .btn{display:inline-flex;align-items:center;gap:.25rem;padding:.4rem .6rem;border:1px solid #2b3b57;border-radius:999px;background:linear-gradient(135deg,#0f172a,#111827);color:var(--text);cursor:pointer}
 
-    /* Tarjeta de impresora */
-    .card{display:grid;grid-template-columns:minmax(260px,1fr) 1.5fr;gap:12px;border:1px solid var(--line);border-radius:12px;background:#0d1117;padding:10px}
-    @media (max-width:960px){.card{grid-template-columns:1fr}}
-    .carousel{position:relative;background:#0f1524;min-height:220px;border-radius:10px;overflow:hidden;border:1px solid #223047}
+    /* Tarjeta: 3 columnas (carrusel | info | detalles al lado) */
+    .card{
+      display:grid;
+      grid-template-columns: minmax(260px,1.1fr) 1.2fr 0.9fr;
+      gap:12px;border:1px solid var(--line);border-radius:12px;background:#0d1117;padding:10px
+    }
+    @media (max-width:1100px){ .card{grid-template-columns: 1fr 1fr} .details-aside{grid-column: 1 / -1} }
+    @media (max-width:720px){ .card{grid-template-columns:1fr} }
+
+    .carousel{position:relative;background:#0f1524;min-height:260px;border-radius:10px;overflow:hidden;border:1px solid #223047}
     .carousel img{width:100%;height:100%;object-fit:cover;display:block}
     .carousel .nav{position:absolute;top:50%;transform:translateY(-50%);background:#0b1324;border:1px solid #223047;border-radius:999px;padding:.2rem .4rem}
     .carousel .prev{left:.35rem}.carousel .next{right:.35rem}
     .carousel .indicator{position:absolute;bottom:.35rem;left:50%;transform:translateX(-50%);font-size:.8rem;padding:.05rem .5rem;border:1px solid #223047;border-radius:999px;background:#0b1324}
-    .title{margin:.1rem 0;font-size:1rem;font-weight:700}
+
+    .title{margin:.1rem 0;font-size:1.05rem;font-weight:800}
     .desc{margin:.1rem 0;color:var(--muted)}
     .tags{display:flex;flex-wrap:wrap;gap:.35rem;margin:.25rem 0}
     .tag{display:inline-flex;padding:.1rem .45rem;border-radius:999px;background:#0f172a;border:1px solid #223047;font-size:.78rem;color:#cfd8ea}
     .suggestion{display:flex;align-items:center;gap:.5rem;padding:.3rem .45rem;border:1px solid #223047;border-radius:10px;background:#0c121f;font-size:.9rem;margin-top:.25rem}
     .suggestion small{color:var(--muted);font-size:.78rem}
-    .features{margin:.35rem 0 .1rem 1.1rem}
-    .actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.25rem}
+    .actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.4rem}
+
+    /* Panel de detalles lateral (reemplaza desplegable) */
+    .details-aside{border:1px solid #223047;border-radius:10px;background:#0f1524;padding:10px;display:grid;grid-template-rows:auto 1fr auto;gap:8px;min-height:260px}
+    .details-aside h4{margin:0 0 4px 0;font-size:.95rem}
+    .features{margin:0 0 .1rem 1rem;overflow:auto;max-height:260px}
+    .updated{color:var(--muted)}
 
     /* HUB de comparación (pantalla completa) */
     .hub[hidden]{display:none}
     .hub{position:fixed;inset:0;background:rgba(5,7,10,.7);backdrop-filter:blur(6px);display:grid;place-items:center;z-index:1000}
     .hub__content{width:min(1200px,96vw);height:min(90vh,1000px);border:1px solid var(--line);border-radius:16px;background:var(--panel);box-shadow:var(--shadow);display:grid;grid-template-rows:auto 1fr}
     .hub__head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
-    .hub__body{display:grid;grid-template-columns:320px 1fr;gap:12px;padding:12px}
-    @media (max-width:960px){.hub__body{grid-template-columns:1fr}}
-    .hub__side{display:grid;grid-template-rows:auto auto 1fr auto;gap:8px}
     .pill{background:#0b1324;border:1px solid var(--line);border-radius:999px;padding:.25rem .6rem;font-size:.82rem}
+    .hub__body{display:grid;grid-template-columns:340px 1fr;gap:12px;padding:12px}
+    @media (max-width:960px){.hub__body{grid-template-columns:1fr}}
     .hub__search{padding:.45rem .6rem;background:#0d1422;color:var(--text);border:1px solid #223047;border-radius:10px;width:100%}
-    .hub__list{border:1px solid var(--line);border-radius:12px;background:#0d1117;overflow:auto}
+    .hub__side{display:grid;grid-template-rows:auto auto 1fr auto;gap:8px;min-height:0}
+    .hub__list{border:1px solid var(--line);border-radius:12px;background:#0d1117;overflow:auto;min-height:0}
     .hub__item{display:flex;gap:.5rem;align-items:center;padding:8px;border-bottom:1px dashed rgba(255,255,255,.06)}
     .hub__item:last-child{border-bottom:0}
     .hub__main{min-width:0}
+
+    /* Tabla de comparación */
     .compare-wrap{overflow-x:auto;border:1px solid var(--line);border-radius: var(--radius);background:#0d1117}
     table.compare{border-collapse:separate;border-spacing:0;width:100%;min-width:720px}
     .compare th,.compare td{border-bottom:1px solid var(--line);padding:.45rem .5rem;vertical-align:top;background:transparent;font-size:.92rem}
     .compare thead th{position:sticky;top:0;background:#0f1524;z-index:1}
     .sticky{position:sticky;left:0;background:#0f1524;z-index:2;border-right:1px solid var(--line);min-width:170px}
-
-    footer{padding:.75rem 12px;border-top:1px solid var(--line);color:var(--muted)}
+    .is-primary-col{background:var(--primary-col)!important;box-shadow: inset 0 0 0 1px rgba(122,162,255,.35)}
   </style>
 </head>
 <body>
-  <header>
-    <h1>Catálogo de Impresoras</h1>
-    <div class="toolbar" role="region" aria-label="Controles">
-      <input id="searchInput" class="input" type="search" placeholder="Buscar (marca, modelo, característica) — usa /" aria-label="Buscar" />
-      <select id="brandFilter" class="select" aria-label="Marca"><option value="">Marca</option></select>
-      <select id="typeFilter" class="select" aria-label="Tipo"><option value="">Tipo</option></select>
-      <select id="sortSelect" class="select" aria-label="Orden">
-        <option value="name_asc">Nombre A–Z</option>
-        <option value="price_asc">Precio ↑</option>
-        <option value="price_desc">Precio ↓</option>
-      </select>
-      <div id="status" class="status" role="status" aria-live="polite">Cargando…</div>
-    </div>
-  </header>
+  <header><h1>Catálogo de Impresoras</h1></header>
 
   <main class="layout">
-    <!-- Lista rápida -->
+    <!-- Lista rápida (buscador arriba) -->
     <aside class="quick" aria-label="Lista rápida">
-      <header><strong>Resultados</strong> — <span class="meta">clic para seleccionar · Alt+←/→ navega</span></header>
+      <header>
+        <div class="q-top">
+          <div class="q-title">Resultados</div>
+          <div id="status" class="status" role="status" aria-live="polite">Cargando…</div>
+        </div>
+        <input id="searchInput" class="input" type="search" placeholder="Buscar por marca, modelo o características — usa /" aria-label="Buscar" />
+      </header>
       <ul id="quickList"></ul>
     </aside>
 
     <!-- Detalle -->
-    <div style="display:grid;gap:12px;">
-      <section class="panel" aria-label="Impresora seleccionada">
-        <div class="panel-head"><strong>Impresora seleccionada</strong></div>
-        <div class="panel-body"><div id="primaryContainer"></div></div>
-      </section>
-      <!-- (NOTE) El comparador abajo fue removido. Ahora se abre el HUB de comparación. -->
-    </div>
+    <section class="panel" aria-label="Impresora seleccionada">
+      <div class="panel-head"><strong>Impresora seleccionada</strong></div>
+      <div class="panel-body"><div id="primaryContainer"></div></div>
+    </section>
   </main>
 
   <!-- HUB de comparación -->
@@ -142,7 +143,7 @@
           <span class="pill">Incluye siempre la impresora seleccionada</span>
           <input id="hubSearch" class="hub__search" placeholder="Buscar en catálogo…" aria-label="Buscar en lista" />
           <div id="hubList" class="hub__list" role="listbox" aria-label="Listado para comparar"></div>
-          <small class="pill" style="justify-self:start">Tip: usa clic o barra espaciadora en el ítem para (des)seleccionar</small>
+          <small class="pill" style="justify-self:start">Tip: clic o barra espaciadora para (des)seleccionar</small>
         </aside>
         <div class="hub__main">
           <div id="hubTableWrap" class="compare-wrap" aria-live="polite"></div>
@@ -151,15 +152,18 @@
     </div>
   </section>
 
-  <!-- Tarjeta -->
+  <!-- Tarjeta (con panel lateral de detalles visible) -->
   <template id="tpl-card">
     <article class="card">
+      <!-- Col 1: carrusel -->
       <div class="carousel" tabindex="0" aria-label="Galería de imágenes" aria-live="polite">
         <button class="btn nav prev" type="button" aria-label="Imagen anterior">◀</button>
         <img class="slide" loading="lazy" decoding="async" alt="" />
         <div class="indicator" aria-live="polite" aria-atomic="true">1/1</div>
         <button class="btn nav next" type="button" aria-label="Imagen siguiente">▶</button>
       </div>
+
+      <!-- Col 2: info principal -->
       <div>
         <h3 class="title"><span class="name"></span></h3>
         <p class="desc"></p>
@@ -169,21 +173,24 @@
           <span class="tag stock"></span>
           <span class="tag price"></span>
         </div>
-        <div class="suggestion"><span class="suggestion-text"></span><small class="suggestion-source"></small></div>
-        <details style="margin-top:.4rem;border:1px solid #223047;border-radius:10px;padding:.35rem .5rem;background:#0f1524">
-          <summary style="cursor:pointer;font-weight:700">Más detalles</summary>
-          <ul class="features"></ul>
-          <div class="actions" style="margin-top:.25rem;">
-            <a class="btn link" target="_blank" rel="noopener">Ver en mi sitio</a>
-            <button class="btn compare-open" type="button">Comparar productos</button>
-          </div>
-          <div class="desc" style="margin-top:.25rem;">Última actualización: <span class="updated"></span></div>
-        </details>
+        <div class="suggestion">
+          <span class="suggestion-text"></span>
+          <small class="suggestion-source"></small>
+        </div>
+        <div class="actions">
+          <a class="btn link" target="_blank" rel="noopener">Ver en mi sitio</a>
+          <button class="btn compare-open" type="button">Comparar productos</button>
+        </div>
       </div>
+
+      <!-- Col 3: detalles al lado -->
+      <aside class="details-aside" aria-label="Detalles">
+        <h4>Características</h4>
+        <ul class="features"></ul>
+        <div class="updated">Última actualización: <span class="updated-date"></span></div>
+      </aside>
     </article>
   </template>
-
-  <footer>Interfaz simplificada. Comparación ahora en HUB pantalla completa con menú lateral.</footer>
 
   <script>
     /* ========= Config ========= */
@@ -211,17 +218,15 @@
         ultima_actualizacion:["Última actualización","actualizado","update_date","last_update","fecha actualización"],
       },
     };
-    const CACHE_KEY = "impresorasCache:simpleHub:v1";
+    const CACHE_KEY = "impresorasCache:simpleHub:v2";
     const MAX_IMAGES_PER_CARD = 6;
     const MAX_COMPARE_TOTAL = 4; // 1 principal + 3
     const MAX_QUICKLIST = 250;
 
     /* ========= Estado ========= */
     const state = {
-      raw:[], items:[], medianaPorGrupo:{},
-      filters:{search:"",marca:"",tipo:"",sort:"name_asc"},
-      selectedId:"", compareIds:[], // ids extras (excluye la seleccionada)
-      hubSearch:""
+      items:[], medianaPorGrupo:{},
+      search:"", selectedId:"", compareIds:[], hubSearch:""
     };
 
     /* ========= Utils ========= */
@@ -239,7 +244,7 @@
     const _buildHeaderIndex=r=>{const i={};Object.keys(r||{}).forEach(k=>i[_normKey(k)]=k);return i;};
     const _makeReader=idx=>(row,want)=>{const c=[want,...(CONFIG.HEADER_ALIASES?.[want]||[])];for(const w of c){const real=idx[_normKey(w)];if(real&&row[real]!=null&&String(row[real]).trim()!=="")return String(row[real]).trim();}return "";};
     function _extractImages(row,idx){const d=_makeReader(idx)(row,"imagenes");if(d)return d;const imgs=[];for(const k of Object.keys(row)){const nk=_normKey(k);if(nk.startsWith("imagen")||nk.startsWith("foto")||nk.startsWith("image")){const v=String(row[k]??"").trim();if(v)imgs.push(v);}}return imgs.join(", ");}
-    function _extractFeatures(row,idx){const d=_makeReader(idx)(row,"caracteristicas");if(d)return d;const fs=[];for(const k of Object.keys(row)){const nk=_normKey(k);if(nk.startsWith("caracteristica")||nk.startsWith("feature")||nk==="caracteristicas"){const v=String(row[k]??"").trim();if(v)fs.push(v);}}return fs.join("|");}
+    function _extractFeatures(row,idx){const d=_makeReader(idx)(row,"caracteristicas");if(d)return d;const fs=[];for(const k of Object.keys(row)){const nk=_normKey(k);if(nk.startsWith("caracteristica")||nk.startsWith("feature")||nk==="caracteristicas"){const v=String(row[k]??"").trim();if(v)fs.push(v);} }return fs.join("|");}
     const _normalizeStock=s=>{const v=String(s||"").toLowerCase();if(!v)return"";if(/(sin\s*stock|agotad|no\s*disponible)/.test(v))return"sin_stock";if(/(bajo|poco)/.test(v))return"bajo";if(/(pedido|order)/.test(v))return"bajo_pedido";if(/(en\s*stock|disponible|stock)/.test(v))return"en_stock";return v;};
     function remapRowsWithAliases(rows){if(!rows||!rows.length)return rows;const idx=_buildHeaderIndex(rows[0]),read=_makeReader(idx);
       return rows.map(r=>({...r,
@@ -303,25 +308,17 @@
     }
 
     /* ========= Filtros + render ========= */
-    function buildFilters(items){
-      const b=$("#brandFilter"), t=$("#typeFilter"); b.length=1; t.length=1;
-      [...new Set(items.map(i=>i.marca).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;b.appendChild(o);});
-      [...new Set(items.map(i=>i.tipo ).filter(Boolean))].sort((a,b)=>a.localeCompare(b)).forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;t.appendChild(o);});
-    }
     function filteredItems(){
-      const q=state.filters.search.toLowerCase().trim(), marca=state.filters.marca, tipo=state.filters.tipo;
+      const q=state.search.toLowerCase().trim();
       let out=state.items.filter(it=>{
-        if(marca && it.marca!==marca) return false;
-        if(tipo  && it.tipo !==tipo ) return false;
-        if(q){const hay=[it.marca,it.modelo,it.nombre,it.tipo,it.descripcion_corta,it._features.join(" ")].join(" ").toLowerCase(); if(!hay.includes(q)) return false;}
-        return true;
+        if(!q) return true;
+        const hay=[it.marca,it.modelo,it.nombre,it.tipo,it.descripcion_corta,it._features.join(" ")].join(" ").toLowerCase();
+        return hay.includes(q);
       });
-      const sort=state.filters.sort;
-      if(sort==="name_asc") out.sort((a,b)=>a.nombre.localeCompare(b.nombre,undefined,{sensitivity:"base"}));
-      else if(sort==="price_asc") out.sort((a,b)=>(a._precio??Infinity)-(b._precio??Infinity));
-      else if(sort==="price_desc") out.sort((a,b)=>(b._precio??-Infinity)-(a._precio??-Infinity));
+      out.sort((a,b)=>a.nombre.localeCompare(b.nombre,undefined,{sensitivity:"base"}));
       return out;
     }
+
     function renderQuickList(){
       const ul=$("#quickList"); ul.innerHTML="";
       const items=filteredItems().slice(0,MAX_QUICKLIST);
@@ -333,14 +330,12 @@
             <div class="name">${escapeHTML(it.nombre)}</div>
             <div class="chips"><span class="chip">${escapeHTML(it.marca)}</span><span class="chip">${escapeHTML(it.tipo||"")||"—"}</span></div>
           </div>
-          <div class="row-actions">
-            <div class="price">${it._precio!=null?escapeHTML(formatPrice(it._precio,it.moneda)):""}</div>
-          </div>`;
+          <div class="price">${it._precio!=null?escapeHTML(formatPrice(it._precio,it.moneda)):""}</div>`;
         li.addEventListener("click", ()=>{ state.selectedId=it.id; renderPrimary(); highlightQuickList(); });
         li.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); state.selectedId=it.id; renderPrimary(); highlightQuickList(); }});
         frag.appendChild(li);
       }
-      if(!items.length){ const li=document.createElement("li"); li.innerHTML='<span class="meta">No hay resultados.</span>'; frag.appendChild(li); }
+      if(!items.length){ const li=document.createElement("li"); li.innerHTML='<span class="chips">Sin resultados</span>'; frag.appendChild(li); }
       ul.appendChild(frag);
       $("#status").textContent=`Resultados: ${items.length} · Total: ${state.items.length}`;
       if(!state.selectedId && items[0]){ state.selectedId=items[0].id; renderPrimary(); highlightQuickList(); }
@@ -350,12 +345,10 @@
     function renderPrimary(){
       const c=$("#primaryContainer"); c.innerHTML="";
       const it=state.items.find(x=>x.id===state.selectedId);
-      if(!it){ c.innerHTML='<div class="meta">Selecciona una impresora.</div>'; return; }
+      if(!it){ c.innerHTML='<div class="chips">Selecciona una impresora.</div>'; return; }
       const node=renderCard(it);
-      // botón principal abre HUB
       $(".compare-open", node).addEventListener("click", openCompareHub);
       c.appendChild(node);
-      highlightQuickList();
     }
     function renderCard(item){
       const tpl=$("#tpl-card"); const el=tpl.content.firstElementChild.cloneNode(true);
@@ -375,9 +368,9 @@
       el.querySelector(".stock").textContent=({en_stock:"En stock",bajo:"Stock bajo",sin_stock:"Sin stock",bajo_pedido:"Bajo pedido"}[item.stock]||item.stock||"—");
       el.querySelector(".price").textContent=item._precio!=null?formatPrice(item._precio,item.moneda):"";
       const feats=el.querySelector(".features"); feats.innerHTML=""; for(const f of item._features){ const li=document.createElement("li"); li.textContent=f; feats.appendChild(li); }
+      el.querySelector(".updated-date").textContent=item.ultima_actualizacion||"—";
       const sug=el.querySelector(".suggestion"); sug.querySelector(".suggestion-text").textContent=item._sugerencia; sug.querySelector(".suggestion-source").textContent=item._sugerencia_source; sug.title=item._sugerencia_source;
       const a=el.querySelector(".link"); if(item.url_producto){ a.href=item.url_producto; } else { a.textContent="Sin enlace"; a.href="javascript:void(0)"; a.setAttribute("aria-disabled","true"); }
-      el.querySelector(".updated").textContent=item.ultima_actualizacion||"—";
       return el;
     }
 
@@ -386,11 +379,9 @@
       const hub=$("#compareHub"); hub.hidden=false; document.body.style.overflow="hidden";
       $("#hubSearch").value = state.hubSearch || "";
       renderHub();
-      setTimeout(()=>$("#hubSearch").focus(), 0);
+      setTimeout(()=>$("#hubSearch").focus(),0);
     }
-    function closeCompareHub(){
-      $("#compareHub").hidden=true; document.body.style.overflow="";
-    }
+    function closeCompareHub(){ $("#compareHub").hidden=true; document.body.style.overflow=""; }
     function addToCompare(ids){
       const allowedExtras = Math.max(0, MAX_COMPARE_TOTAL-1);
       for(const id of ids){
@@ -402,12 +393,12 @@
       }
     }
     function removeFromCompare(id){ state.compareIds = state.compareIds.filter(x=>x!==id); renderHub(); }
+
     function renderHub(){
-      // Sidebar list
+      // Sidebar
       const q = ($("#hubSearch").value || "").toLowerCase().trim();
       state.hubSearch = q;
-      const list = $("#hubList"); list.innerHTML="";
-      const items = state.items.filter(it=>{
+      const list = $("#hubList"); list.innerHTML=""; const items = state.items.filter(it=>{
         if(!q) return true;
         const hay=[it.marca,it.modelo,it.nombre,it.tipo,it._features.join(" ")].join(" ").toLowerCase();
         return hay.includes(q);
@@ -429,20 +420,17 @@
           } else {
             state.compareIds = state.compareIds.filter(x=>x!==it.id);
           }
-          renderHubMain();
-          updateHubCount();
+          renderHubMain(); updateHubCount();
         });
         row.addEventListener("keydown", (e)=>{ if(e.key===" "){ e.preventDefault(); cb.click(); }});
         const name=document.createElement("span");
-        name.innerHTML = `<strong>${escapeHTML(it.nombre)}</strong> <span class="chip">${escapeHTML(it.marca)}</span>`;
-        if(isPrimary){ const chip=document.createElement("span"); chip.className="chip"; chip.textContent="Seleccionada"; name.append(" ", chip); }
+        name.innerHTML = `<strong>${escapeHTML(it.nombre)}</strong> <span class="chip">${escapeHTML(it.marca)}</span>${isPrimary? ' <span class="chip">Seleccionada</span>':''}`;
         row.appendChild(cb); row.appendChild(name);
         frag.appendChild(row);
       }
-      if(!items.length){ const empty=document.createElement("div"); empty.className="hub__item"; empty.innerHTML='<span class="muted">Sin resultados</span>'; frag.appendChild(empty); }
+      if(!items.length){ const empty=document.createElement("div"); empty.className="hub__item"; empty.innerHTML='<span class="chip">Sin resultados</span>'; frag.appendChild(empty); }
       list.appendChild(frag);
-      updateHubCount();
-      renderHubMain();
+      updateHubCount(); renderHubMain();
     }
     function renderHubMain(){
       const wrap=$("#hubTableWrap"); wrap.innerHTML="";
@@ -450,24 +438,28 @@
       const cols=[primary, ...state.compareIds.map(id=>state.items.find(x=>x.id===id)).filter(Boolean)];
       wrap.appendChild(buildCompareTable(cols));
     }
-    function updateHubCount(){
-      $("#hubCount").textContent = `${state.compareIds.length} seleccionados (máx. ${Math.max(0, MAX_COMPARE_TOTAL-1)} además del principal)`;
-    }
+    function updateHubCount(){ $("#hubCount").textContent = `${state.compareIds.length} seleccionados (máx. ${Math.max(0, MAX_COMPARE_TOTAL-1)} además del principal)`; }
+
     function buildCompareTable(items){
       const t=document.createElement("table"); t.className="compare"; const thead=t.createTHead(); const hrow=thead.insertRow();
       const h0=document.createElement("th"); h0.className="sticky"; h0.textContent="Especificación"; hrow.appendChild(h0);
-      for(const it of items){
+      // encabezados por columna
+      items.forEach((it,idx)=>{
         const th=document.createElement("th");
+        if(idx===0) th.classList.add("is-primary-col");
         th.innerHTML=`<div><strong>${escapeHTML(it.nombre)}</strong></div>
           <div style="color:var(--muted)">${escapeHTML(it.marca)} ${escapeHTML(it.modelo)}</div>
           <div style="white-space:nowrap;margin-top:.25rem;">
             ${it.url_producto?`<a class="btn" href="${it.url_producto}" target="_blank" rel="noopener">Ver</a>`:`<span class="chip">Sin enlace</span>`}
-            ${it.id!==state.selectedId?` <button class="btn remove-col" data-id="${it.id}" type="button">Quitar</button>`:` <span class="chip">Principal</span>`}
+            ${idx!==0?` <button class="btn remove-col" data-id="${it.id}" type="button">Quitar</button>`:` <span class="chip">Principal</span>`}
           </div>`;
         hrow.appendChild(th);
-      }
+      });
+      // cuerpo
       const tb=t.createTBody();
-      const add=(label,get)=>{const tr=tb.insertRow();const th=document.createElement("th");th.className="sticky";th.textContent=label;tr.appendChild(th);for(const it of items){const td=tr.insertCell();td.innerHTML=get(it)??"—";}};
+      const add=(label,get)=>{const tr=tb.insertRow();const th=document.createElement("th");th.className="sticky";th.textContent=label;tr.appendChild(th);
+        items.forEach((it,idx)=>{const td=tr.insertCell(); const html=get(it)??"—"; td.innerHTML=html; if(idx===0) td.classList.add("is-primary-col");});
+      };
       items.forEach(it=>{it._precioFmt=it._precio!=null?formatPrice(it._precio,it.moneda):"—";});
       add("Nombre", it=>escapeHTML(it.nombre));
       add("Marca", it=>escapeHTML(it.marca));
@@ -486,16 +478,8 @@
 
     /* ========= Eventos ========= */
     function attachEvents(){
-      $("#searchInput").addEventListener("input", debounce(e=>{state.filters.search=e.target.value;updateUI();},300));
-      $("#brandFilter").addEventListener("change", e=>{state.filters.marca=e.target.value;updateUI();});
-      $("#typeFilter").addEventListener("change",  e=>{state.filters.tipo =e.target.value;updateUI();});
-      $("#sortSelect").addEventListener("change",  e=>{state.filters.sort =e.target.value;updateUI();});
-
-      // HUB controls
-      $("#hubSearch").addEventListener("input", debounce(()=>renderHub(),200));
-      $("#hubClose").addEventListener("click", closeCompareHub);
-      $("#hubClear").addEventListener("click", ()=>{ state.compareIds=[]; renderHub(); });
-      document.addEventListener("keydown", (e)=>{
+      $("#searchInput").addEventListener("input", debounce(e=>{state.search=e.target.value;updateUI();},300));
+      document.addEventListener("keydown",(e)=>{
         if(e.key==="/" && !/input|textarea|select/i.test(document.activeElement.tagName)){ e.preventDefault(); $("#searchInput")?.focus(); }
         if(e.altKey && (e.key==="ArrowRight"||e.key==="ArrowLeft")){
           e.preventDefault();
@@ -506,12 +490,12 @@
         if(e.key==="Escape" && !$("#compareHub").hidden) closeCompareHub();
         if(e.key.toLowerCase()==="c" && $("#compareHub").hidden) openCompareHub();
       });
+      $("#hubSearch").addEventListener("input", debounce(()=>renderHub(),200));
+      $("#hubClose").addEventListener("click", closeCompareHub);
+      $("#hubClear").addEventListener("click", ()=>{ state.compareIds=[]; renderHub(); });
       $("#compareHub").addEventListener("click", (e)=>{ if(e.target.id==="compareHub") closeCompareHub(); });
     }
-    function updateUI(){
-      renderQuickList();
-      renderPrimary();
-    }
+    function updateUI(){ renderQuickList(); renderPrimary(); }
 
     /* ========= Demo fallback ========= */
     const SAMPLE_DATA=[
@@ -526,11 +510,11 @@
         const rows=await loadDataWithFallback();
         const {items,medians}=transformAll(rows);
         state.items=items; state.medianaPorGrupo=medians;
-        buildFilters(items); attachEvents(); updateUI();
+        attachEvents(); updateUI();
       }catch(err){
         console.error(err);
         $("#status").textContent="Error al cargar datos";
-        $("#primaryContainer").innerHTML='<div class="meta">Ocurrió un error al obtener los datos.</div>';
+        $("#primaryContainer").innerHTML='<div class="chips">Ocurrió un error al obtener los datos.</div>';
       }
     })();
   </script>
