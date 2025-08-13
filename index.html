@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <title>Listado de Impresoras — Prototipo (HTML único)</title>
+  <title>Catálogo de Impresoras — Vista Unitaria + Comparador (HTML único)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <!--
   =============================================================================
@@ -11,96 +11,78 @@
 
   OBJETIVO
   --------
-  Este archivo `index.html` es un prototipo autosuficiente (sin build ni frameworks)
-  para listar impresoras desde Google Sheets, con búsqueda, filtros, orden y
-  "sugerencia de compra". Incluye:
-    - Opción A: consumo de CSV publicado desde tu Google Sheet.
-    - Opción B: API JSON servida por Google Apps Script (recomendado).
-    - Fallback: dataset de ejemplo embebido si falla todo lo externo.
+  Este `index.html` es un prototipo autosuficiente (sin build ni frameworks)
+  para listar impresoras desde Google Sheets y:
+    - Mostrar SOLO 1 impresora a la vez (vista unitaria).
+    - Permitir elegir otras impresoras por búsqueda/filtros/selector.
+    - Hacer comparativas entre la impresora seleccionada y otras (tabla de comparación).
 
-  ESTRUCTURA DE LA HOJA (pestaña: "Impresoras")
-  ---------------------------------------------
-  Los encabezados deben ser EXACTAMENTE estos (en la fila 1):
+  Incluye:
+    - Opción A: consumo de CSV publicado desde tu Google Sheet (ya configurado con tu URL y gid de Sheet2).
+    - Opción B: API JSON servida por Google Apps Script (recomendado, con placeholder).
+    - Fallback: dataset de ejemplo embebido si falla todo lo externo.
+    - Cache localStorage con TTL (6h).
+
+  ESTRUCTURA DE LA HOJA (pestaña que publiques, p. ej. "Sheet2" o "Impresoras")
+  ----------------------------------------------------------------------------
+  Encabezados EXACTOS (fila 1):
     id | marca | modelo | nombre | tipo | descripcion_corta | caracteristicas | imagenes
     precio | moneda | url_producto | stock | uso_recomendado | sugerencia_compra | ultima_actualizacion
 
-  FORMATO DE COLUMNAS
-  -------------------
-  - id: texto único
-  - marca: HP / Epson / Canon / Brother / ...
-  - modelo: L3250 / ...
-  - nombre: si va vacío, el cliente formará "marca + modelo"
-  - tipo: inyeccion | láser | térmica | multifunción | ...
-  - descripcion_corta: máx. 180 chars
-  - caracteristicas: separadas por "|", ej: "Wi-Fi|A3|Doble cara"
-  - imagenes: URLs separadas por ",", ej: "https://.../a.jpg, https://.../b.jpg"
-  - precio: número (puede llevar punto o coma). Opcional
-  - moneda: ISO (ARS, USD, EUR...). Opcional
-  - url_producto: URL absoluta a tu web
+  FORMATO (resumen)
+  -----------------
+  - caracteristicas: separadas por "|" (ej: "Wi-Fi|A3|Doble cara")
+  - imagenes: URLs separadas por "," (al menos 1; si no hay, se muestra placeholder)
+  - precio: número (punto o coma decimal)
+  - moneda: ISO (ARS, USD, EUR...)
   - stock: en_stock | bajo | sin_stock | bajo_pedido (opcional)
-  - uso_recomendado: hogar|oficina|foto|industrial|estudiante... (opcional)
-  - sugerencia_compra: (opcional). Si no viene, se calcula en el cliente por reglas.
-  - ultima_actualizacion: YYYY-MM-DD (opcional)
 
-  CÓMO PUBLICAR CSV (Opción A, sin claves)
-  ----------------------------------------
-  1) En tu Google Sheet: Archivo → Publicar en la Web.
-  2) Elige "Hoja" = "Impresoras" y formato "CSV".
-     (Si tu hoja publicada se llama "Sheet2", asegúrate de publicar ESA hoja).
-  3) Copia la URL generada y pégala en CONFIG.SHEET_CSV_URL (abajo).
-     En este archivo ya configuré el CSV que nos compartiste.
+  CÓMO PUBLICAR CSV (Opción A)
+  ----------------------------
+  1) Archivo → Publicar en la Web → elige la hoja a publicar (tu caso: "Sheet2") → CSV.
+  2) Copia la URL; aquí ya está configurada con tu enlace y `gid=128232950`.
+     Puedes cambiarla en CONFIG.SHEET_CSV_URL si publicas otra hoja.
 
   API JSON CON APPS SCRIPT (Opción B, recomendado)
   ------------------------------------------------
-  1) En tu Google Sheet: Extensiones → Apps Script.
-  2) Crea un script con el contenido del bloque "APPS SCRIPT — Opción B" al final
-     de ESTE MISMO archivo (está en comentarios, listo para copiar/pegar).
-  3) Ajusta opcionalmente el ID de la hoja en el script o pásalo como ?id=...
-  4) Despliega como aplicación web:
-       - Implementar → Nueva implementación → Tipo: Aplicación web
-       - Ejecutar como: Tú
-       - Quién tiene acceso: Cualquiera con el enlace
-       - Implementar
-  5) Copia la URL de la app (termina en /exec) y pégala en CONFIG.SHEET_JSON_URL.
+  1) Extensiones → Apps Script.
+  2) Copia/pega el bloque "APPS SCRIPT — Opción B" que está al final de ESTE archivo (comentado).
+  3) Implementar → Nueva implementación → Tipo: Aplicación web → Acceso: Cualquiera con el enlace.
+  4) Pega la URL /exec en CONFIG.SHEET_JSON_URL (abajo).
 
   FLUJO DE DATOS Y FALLBACKS
   --------------------------
-  - El cliente intenta: JSON (Apps Script) → CSV publicado → dataset de ejemplo.
-  - Cachea la respuesta en localStorage ("impresorasCache:v1") por 6 horas.
+  - Intento en orden: JSON (Apps Script) → CSV publicado → dataset de ejemplo.
+  - Cache en localStorage ("impresorasCache:v1") por 6 horas.
 
-  SUGERENCIAS DE COMPRA (reglas si no viene desde la hoja)
-  --------------------------------------------------------
+  SUGERENCIAS DE COMPRA (si la hoja no trae texto)
+  ------------------------------------------------
   - stock == "bajo"        → "Comprar pronto: stock limitado"
   - stock == "sin_stock"   → "Esperar reposición"
   - precio < mediana(marca+tipo) → "Buen momento para comprar"
   - uso_recomendado == "estudiante" y estamos en TEMPORADA_CLASES
                            → "Comprar antes de inicio de clases"
   - Si nada aplica         → "Comprar según necesidad"
-  Se muestra la "fuente" de la sugerencia (regla aplicada) como texto pequeño.
+  La "fuente" de la sugerencia se muestra como texto pequeño/título.
 
-  ACCESIBILIDAD/UX
+  PRUEBAS MANUALES
   ----------------
-  - Carrusel accesible con teclado (←/→), aria-live="polite", focus visible.
-  - Imágenes con alt significativo y loading="lazy".
-  - Estados de carga, error y vacío.
+  1) Abre `index.html` en el navegador.
+  2) Verifica carga desde tu CSV (status arriba).
+  3) Cambia filtros/selector para ver otra impresora.
+  4) Añade 1–3 impresoras a la comparación y revisa la tabla.
+  5) Forza offline para ver el dataset de ejemplo.
+  6) Limpia cache: localStorage.removeItem('impresorasCache:v1') y recarga.
 
-  PRUEBAS MANUALES RÁPIDAS
-  ------------------------
-  1) Pega tu URL de Apps Script en CONFIG (opcional) y/o valida que el CSV sea el correcto.
-  2) Abre index.html en el navegador (doble clic o con un server estático).
-  3) Verifica render con datos reales. Prueba "offline" para ver dataset de ejemplo.
-  4) Limpia cache: localStorage.removeItem('impresorasCache:v1') y recarga.
-  5) Prueba búsqueda, filtros (marca/tipo) y orden.
-
-  ACLARACIONES (valores por defecto que puedes ajustar en CONFIG o código)
-  -----------------------------------------------------------------------
-  - Vanilla JS: Sí (sin frameworks). Si más adelante quieres variante React, se puede.
-  - Columnas `tipo` y `uso_recomendado`: asumidas presentes (recomendado crearlas).
-  - Moneda: se mostrará la que llegue en `moneda` (con Intl.NumberFormat si posible).
-  - Carrusel: sólo manual (no auto-avanza, por simplicidad y accesibilidad).
-  - Máx. imágenes por impresora: 6 (configurable, ver MAX_IMAGES_PER_CARD).
-  - Tono sugerencia: informativo (no agresivo).
-  - i18n: no incluido en este prototipo; textos en ES.
+  NOTAS Y SUPUESTOS
+  -----------------
+  - Vanilla JS puro, sin frameworks.
+  - Columnas `tipo` y `uso_recomendado` se asumen presentes (recomendado).
+  - Moneda: se respeta la que llegue en `moneda`.
+  - Carrusel: solo manual (teclas ←/→, botones Prev/Sig).
+  - Máx. imágenes por impresora: 6 (configurable).
+  - Vista por defecto: muestra la PRIMERA impresora tras aplicar filtros/orden.
+  - La comparación incluye SIEMPRE la impresora seleccionada + las que agregues (hasta 4 en total).
 
   =============================================================================
   -->
@@ -113,12 +95,13 @@
       --focus: 2px solid #1a73e8;
       --muted: #6b7280;
       --badge-bg: #f3f4f6;
+      --table-bg: #fafafa;
     }
     * { box-sizing: border-box; }
     html, body { height: 100%; }
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol";
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans";
       line-height: 1.4;
       color: #111;
       background: #fff;
@@ -129,10 +112,10 @@
       background: #fafafa;
     }
     footer { border-top: var(--border); border-bottom: none; color: var(--muted); font-size: .9rem; }
-    h1 { margin: 0 0 .5rem 0; font-size: 1.25rem; }
+    h1 { margin: 0 0 .5rem 0; font-size: 1.2rem; }
     .controls {
       display: grid;
-      grid-template-columns: 1fr minmax(140px, 1fr) minmax(140px, 1fr) minmax(160px, 1fr) auto;
+      grid-template-columns: 1fr minmax(150px, 1fr) minmax(150px, 1fr) minmax(160px, 1fr) minmax(200px, 1.3fr) auto;
       gap: var(--gap);
       align-items: center;
     }
@@ -161,37 +144,43 @@
     .btn:focus-visible { outline: var(--focus); }
     .btn[disabled]{ opacity: .5; cursor: not-allowed; }
 
-    main {
-      padding: 1rem;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1rem;
-    }
+    main { padding: 1rem; display: grid; gap: 1rem; }
+    .section-title { margin: 0; font-size: 1.05rem; }
+
+    /* Card / Vista unitaria */
     .card {
-      display: flex; flex-direction: column;
+      display: grid;
+      grid-template-columns: minmax(280px, 1fr) 2fr;
+      gap: 1rem;
       border: var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       background: #fff;
       overflow: hidden;
+      padding: .75rem;
+    }
+    @media (max-width: 900px){
+      .card { grid-template-columns: 1fr; }
     }
     .carousel {
       position: relative;
       background: #f6f7f9;
-      min-height: 180px;
+      min-height: 240px;
       display: grid;
       place-items: center;
+      border-radius: .35rem;
+      overflow: hidden;
+      border: var(--border);
     }
     .carousel img, .carousel .placeholder {
-      width: 100%; height: 100%; object-fit: cover;
-      display: block;
+      width: 100%; height: 100%; object-fit: cover; display: block;
     }
     .carousel .controls {
       position: absolute; inset: auto 0 .25rem 0; display: flex; gap: .5rem; justify-content: center;
     }
     .carousel .nav {
       position: absolute; top: 50%; transform: translateY(-50%);
-      background: rgba(255,255,255,.8);
+      background: rgba(255,255,255,.9);
       border: var(--border);
       border-radius: var(--radius);
       padding: .25rem .4rem;
@@ -199,12 +188,12 @@
     .carousel .prev { left: .25rem; }
     .carousel .next { right: .25rem; }
     .carousel .indicator {
-      font-size: .8rem; padding: .15rem .5rem; border-radius: 999px; background: rgba(255,255,255,.85);
+      font-size: .8rem; padding: .15rem .5rem; border-radius: 999px; background: rgba(255,255,255,.9);
       border: var(--border); box-shadow: var(--shadow);
     }
-    .content { padding: .75rem .75rem 1rem .75rem; display: grid; gap: .5rem; }
-    .title { margin: 0; font-size: 1rem; line-height: 1.2; }
-    .desc { margin: 0; color: var(--muted); font-size: .92rem; }
+    .content { display: grid; gap: .5rem; }
+    .title { margin: 0; font-size: 1.1rem; line-height: 1.2; }
+    .desc { margin: 0; color: var(--muted); font-size: .95rem; }
     .tags { display: flex; flex-wrap: wrap; gap: .35rem; }
     .tag {
       display: inline-flex; align-items: center; gap: .25rem;
@@ -224,33 +213,70 @@
       font-size: .9rem;
     }
     .suggestion small { color: var(--muted); font-size: .8rem; }
-    .actions { margin-top: .25rem; }
-    .actions .btn { width: 100%; }
-
+    .actions { display: flex; gap: .5rem; flex-wrap: wrap; }
     .status {
       padding: .5rem .75rem; border-radius: .35rem; border: var(--border); background: #fff; box-shadow: var(--shadow);
       margin: .5rem 0 0 0; color: #374151; font-size: .92rem;
     }
     .hidden { display: none !important; }
+    :focus-visible { outline: var(--focus); outline-offset: 2px; }
+
+    /* Comparador */
+    .compare-controls {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: .5rem;
+      align-items: center;
+    }
+    .compare-wrap {
+      overflow-x: auto;
+      border: var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+    table.compare {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+      min-width: 760px;
+    }
+    .compare th, .compare td {
+      border-bottom: var(--border);
+      padding: .5rem .6rem;
+      vertical-align: top;
+      background: #fff;
+    }
+    .compare thead th {
+      position: sticky; top: 0; background: var(--table-bg);
+      z-index: 1;
+    }
+    .compare tbody tr:nth-child(even) td { background: #fcfcfc; }
+    .compare th.sticky, .compare td.sticky {
+      position: sticky; left: 0; background: var(--table-bg); z-index: 2; border-right: var(--border);
+      min-width: 180px;
+    }
+    .compare .col-actions { white-space: nowrap; }
+    .muted { color: var(--muted); font-size: .9rem; }
+    .chip { display:inline-block; padding:.1rem .35rem; border:var(--border); border-radius:999px; background:#f5f5f5; font-size:.78rem; }
+    .small-btn { font-size:.8rem; padding:.25rem .5rem; }
     .sr-only {
       position: absolute!important; width: 1px!important; height: 1px!important; padding: 0!important; margin: -1px!important;
       overflow: hidden!important; clip: rect(0,0,0,0)!important; white-space: nowrap!important; border: 0!important;
     }
-    :focus-visible { outline: var(--focus); outline-offset: 2px; }
 
-    @media (max-width: 720px) {
+    @media (max-width: 900px){
       .controls {
         grid-template-columns: 1fr 1fr;
       }
-      .controls .meta { order: 3; }
       .controls .btn { grid-column: span 2; }
+      .controls .meta { grid-column: 1 / -1; }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Impresoras — Prototipo de Catálogo</h1>
-    <div class="controls" role="region" aria-label="Controles de filtrado y orden">
+    <h1>Impresoras — Vista Unitaria + Comparador</h1>
+    <div class="controls" role="region" aria-label="Controles de filtrado, selección y orden">
       <input id="searchInput" type="search" placeholder="Buscar por marca, modelo o características…" aria-label="Buscar impresoras" />
       <select id="brandFilter" aria-label="Filtrar por marca">
         <option value="">Todas las marcas</option>
@@ -263,15 +289,37 @@
         <option value="price_asc">Precio ↑</option>
         <option value="price_desc">Precio ↓</option>
       </select>
-      <button id="clearBtn" class="btn" type="button" title="Limpiar búsqueda y filtros">Limpiar</button>
+      <select id="printerSelect" aria-label="Seleccionar impresora para ver">
+        <option value="">Seleccionar impresora…</option>
+      </select>
+      <button id="clearBtn" class="btn" type="button" title="Limpiar búsqueda, filtros y selección">Limpiar</button>
+
       <div id="status" class="status meta" role="status" aria-live="polite">Cargando datos…</div>
     </div>
   </header>
 
-  <main id="grid" role="list" aria-live="polite" aria-busy="true"></main>
+  <main>
+    <section aria-label="Vista de impresora seleccionada">
+      <h2 class="section-title">Impresora seleccionada</h2>
+      <div id="primaryContainer"></div>
+    </section>
+
+    <section aria-label="Comparador de impresoras">
+      <h2 class="section-title">Comparar impresoras</h2>
+      <div class="compare-controls" role="region" aria-label="Controles para comparación">
+        <select id="compareSelect" multiple size="4" aria-label="Selecciona 1–3 impresoras para comparar (además de la seleccionada)">
+          <!-- opciones dinámicas -->
+        </select>
+        <button id="addToCompareBtn" class="btn small-btn" type="button" title="Añadir seleccionadas a la comparación">Añadir a comparación</button>
+        <button id="clearCompareBtn" class="btn small-btn" type="button" title="Vaciar comparación">Vaciar comparación</button>
+      </div>
+      <div class="muted">La primera columna es la característica. Las columnas siguientes son las impresoras comparadas (incluye siempre la seleccionada).</div>
+      <div id="compareWrap" class="compare-wrap" aria-live="polite"></div>
+    </section>
+  </main>
 
   <template id="tpl-card">
-    <article class="card" role="listitem">
+    <article class="card">
       <div class="carousel" tabindex="0" aria-label="Galería de imágenes" aria-live="polite">
         <button class="btn nav prev" type="button" aria-label="Imagen anterior">◀</button>
         <img class="slide" loading="lazy" decoding="async" alt="" />
@@ -280,6 +328,7 @@
         </div>
         <button class="btn nav next" type="button" aria-label="Imagen siguiente">▶</button>
       </div>
+
       <div class="content">
         <h3 class="title"><span class="name"></span></h3>
         <p class="desc"></p>
@@ -296,8 +345,9 @@
         </div>
         <div class="actions">
           <a class="btn link" target="_blank" rel="noopener">Ver en mi sitio</a>
+          <button class="btn small-btn add-to-compare" type="button" title="Añadir esta impresora a la comparación">Añadir a comparación</button>
         </div>
-        <small class="muted" style="color:var(--muted)">Última actualización: <span class="updated"></span></small>
+        <small class="muted">Última actualización: <span class="updated"></span></small>
       </div>
     </article>
   </template>
@@ -312,13 +362,14 @@
     // =========================================================================
     const CONFIG = {
       SHEET_JSON_URL: "https://script.google.com/.../exec", // PLACEHOLDER (Apps Script Web App - Opción B)
-      // CSV publicado que compartiste (hoja "Sheet2" según indicaste):
+      // CSV publicado — tu enlace a "Sheet2" (gid=128232950):
       SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZ-GFIahnmzB09C1GWCvAs1PaNXmpN2_Ed5taWtseTRlqx0P8-ZKJ28TOsvziFOw/pub?gid=128232950&single=true&output=csv",
       TEMPORADA_CLASES: { inicio: "2025-02-15", fin: "2025-03-31" },
       CACHE_TTL_MS: 1000 * 60 * 60 * 6, // 6 horas
     };
     const CACHE_KEY = "impresorasCache:v1";
     const MAX_IMAGES_PER_CARD = 6;
+    const MAX_COMPARE_TOTAL = 4; // Incluye la seleccionada. Ej: seleccionada + 3 más.
 
     // =========================================================================
     // DATASET DE EJEMPLO (fallback)
@@ -332,13 +383,13 @@
         tipo: "inyeccion",
         descripcion_corta: "Multifunción con Wi-Fi para hogar y tareas escolares.",
         caracteristicas: "Wi-Fi|Imprime/Escanea/Copia|A4|Tanque de tinta",
-        imagenes: "", // vacío → se genera placeholder
+        imagenes: "",
         precio: "149999",
         moneda: "ARS",
         url_producto: "https://tu-dominio.example/impresoras/hp-ink-tank-415",
         stock: "bajo",
         uso_recomendado: "estudiante",
-        sugerencia_compra: "", // se calculará
+        sugerencia_compra: "",
         ultima_actualizacion: "2025-08-01",
       },
       {
@@ -390,23 +441,22 @@
         tipo: "",
         sort: "name_asc",
       },
+      selectedId: "",      // impresora principal
+      compareIds: [],      // ids adicionales para comparar (excluye selectedId)
     };
 
     // =========================================================================
-    // UTILIDADES (fechas, números, debounce, CSV, etc.)
+    // UTILIDADES
     // =========================================================================
     const $ = (sel, root=document) => root.querySelector(sel);
     const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
 
     function debounce(fn, delay=300) {
       let t;
-      return (...args) => {
-        clearTimeout(t);
-        t = setTimeout(() => fn(...args), delay);
-      };
+      return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
     }
 
-    function withinDateRange(_dateStr, range) {
+    function withinDateRange(_d, range) {
       const today = new Date();
       const start = new Date(range.inicio + "T00:00:00");
       const end   = new Date(range.fin    + "T23:59:59");
@@ -417,9 +467,8 @@
       if (value == null || value === "") return null;
       const s = String(value).trim().replace(/\s+/g, "");
       const normalized = s
-        // Si hay separadores de millares, quitarlos. Mantener el decimal final como punto.
-        .replace(/(?<=\d)[.,](?=\d{3}\b)/g, "")
-        .replace(",", ".");
+        .replace(/(?<=\d)[.,](?=\d{3}\b)/g, "") // quita separador de miles
+        .replace(",", "."); // usa punto decimal
       const n = Number(normalized);
       return Number.isFinite(n) ? n : null;
     }
@@ -430,11 +479,11 @@
         if (currency) {
           return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(n);
         }
-      } catch(_) {/* si la moneda no es válida, sigue abajo */}
+      } catch(_) {}
       return new Intl.NumberFormat(undefined).format(n) + (currency ? ` ${currency}` : "");
     }
 
-    // CSV parser simple compatible con CSV de Google Sheets (maneja comillas)
+    // CSV parser (maneja comillas dobles)
     function parseCSVToObjects(csvText) {
       const rows = [];
       let i=0, field="", row=[], inQuotes=false;
@@ -445,24 +494,20 @@
         if (inQuotes) {
           if (c === '"') {
             if (csvText[i+1] === '"') { field += '"'; i++; } else { inQuotes = false; }
-          } else {
-            field += c;
-          }
+          } else { field += c; }
         } else {
-          if (c === '"') { inQuotes = true; }
-          else if (c === ",") { endField(); }
+          if (c === '"') inQuotes = true;
+          else if (c === ",") endField();
           else if (c === "\n") { endField(); endRow(); }
-          else if (c === "\r") { /* ignore CR */ }
-          else { field += c; }
+          else if (c === "\r") { /* ignore */ }
+          else field += c;
         }
         i++;
       }
-      // último campo
       endField(); endRow();
-      // a objetos
       const headers = rows.shift()?.map(h => (h || "").trim()) || [];
       return rows
-        .filter(r => r.some(v => (v||"").trim() !== "")) // descarta filas vacías
+        .filter(r => r.some(v => (v||"").trim() !== ""))
         .map(r => {
           const obj = {};
           headers.forEach((h, idx) => obj[h] = (r[idx] ?? "").trim());
@@ -496,7 +541,6 @@
       const res = await fetch(url, { headers: { "Accept": "application/json" }});
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      // Soportar formatos {data:[...]} o array directo
       const rows = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : []);
       if (!rows.length) throw new Error("JSON vacío");
       return rows;
@@ -531,16 +575,13 @@
     async function loadDataWithFallback() {
       const status = $("#status");
       status.textContent = "Cargando datos…";
-      $("#grid").setAttribute("aria-busy", "true");
 
-      // 1) Cache
       const cached = loadCache();
       if (cached) {
         status.textContent = `Usando cache (${cached.length} registros)`;
         return cached;
       }
 
-      // 2) JSON → CSV → SAMPLE
       try {
         status.textContent = "Consultando API JSON (Apps Script)…";
         const jsonRows = await tryFetchJSON(CONFIG.SHEET_JSON_URL);
@@ -567,8 +608,6 @@
     // =========================================================================
     function normalizeRow(row) {
       const item = { ...row };
-
-      // Campos base (asegurar existencias)
       const marca = (item.marca || "").trim();
       const modelo = (item.modelo || "").trim();
       item.nombre = (item.nombre || "").trim() || `${marca} ${modelo}`.trim();
@@ -577,7 +616,6 @@
       item.tipo = (item.tipo || "").trim();
       item.descripcion_corta = (item.descripcion_corta || "").trim();
 
-      // Características e imágenes
       const features = (item.caracteristicas || "")
         .split("|").map(x => x.trim()).filter(Boolean);
       item._features = features;
@@ -585,25 +623,18 @@
       let images = (item.imagenes || "")
         .split(",").map(x => x.trim()).filter(Boolean);
       if (images.length > MAX_IMAGES_PER_CARD) images = images.slice(0, MAX_IMAGES_PER_CARD);
-      // placeholder si no hay
-      if (!images.length) {
-        images = [placeholderDataURI(initials(item.marca, item.modelo))];
-      }
+      if (!images.length) images = [placeholderDataURI(initials(item.marca, item.modelo))];
       item._images = images;
 
-      // Precios
       const precioNum = parsePrice(item.precio);
       item._precio = precioNum;
       item.moneda = (item.moneda || "").trim().toUpperCase();
-
-      // Enlace
       item.url_producto = (item.url_producto || "").trim();
-
-      // Stock y otros
       item.stock = (item.stock || "").trim();
       item.uso_recomendado = (item.uso_recomendado || "").trim();
       item.sugerencia_compra = (item.sugerencia_compra || "").trim();
       item.ultima_actualizacion = (item.ultima_actualizacion || "").trim();
+      item.id = (item.id || `${item.marca}-${item.modelo}`).trim();
 
       return item;
     }
@@ -612,12 +643,11 @@
       if (!numbers.length) return null;
       const arr = numbers.slice().sort((a,b)=>a-b);
       const mid = Math.floor(arr.length/2);
-      if (arr.length % 2) return arr[mid];
-      return (arr[mid-1] + arr[mid]) / 2;
+      return (arr.length % 2) ? arr[mid] : (arr[mid-1] + arr[mid]) / 2;
     }
 
     function buildMedians(items) {
-      const groups = new Map(); // key -> number[]
+      const groups = new Map();
       for (const it of items) {
         if (it._precio == null) continue;
         const key = `${it.marca}|${it.tipo}`;
@@ -625,24 +655,16 @@
         groups.get(key).push(it._precio);
       }
       const med = {};
-      for (const [key, nums] of groups.entries()) {
-        med[key] = computeMedian(nums);
-      }
+      for (const [key, nums] of groups.entries()) med[key] = computeMedian(nums);
       return med;
     }
 
     function computeSuggestion(item, medianas, temporada) {
-      // Si ya viene una sugerencia desde la hoja, respetarla
       if (item.sugerencia_compra) {
         return { text: item.sugerencia_compra, source: "Fuente: hoja de cálculo" };
       }
-      // Reglas:
-      if (item.stock === "bajo") {
-        return { text: "Comprar pronto: stock limitado", source: "Regla: stock=bajo" };
-      }
-      if (item.stock === "sin_stock") {
-        return { text: "Esperar reposición", source: "Regla: stock=sin_stock" };
-      }
+      if (item.stock === "bajo")       return { text: "Comprar pronto: stock limitado", source: "Regla: stock=bajo" };
+      if (item.stock === "sin_stock")  return { text: "Esperar reposición", source: "Regla: stock=sin_stock" };
       const key = `${item.marca}|${item.tipo}`;
       const med = medianas[key];
       if (item._precio != null && med != null && item._precio < med) {
@@ -666,12 +688,11 @@
     }
 
     // =========================================================================
-    // RENDER: Listado de tarjetas + Controles + Estados
+    // RENDER: Selectores, Vista unitaria, Comparador
     // =========================================================================
     function buildFilters(items) {
       const brandSel = $("#brandFilter");
       const typeSel  = $("#typeFilter");
-      // Limpiar (dejando first option)
       brandSel.length = 1;
       typeSel.length  = 1;
 
@@ -690,26 +711,24 @@
       }
     }
 
-    function applyFilters(items) {
+    function filteredItems() {
       const q = state.filters.search.toLowerCase().trim();
       const marca = state.filters.marca;
       const tipo = state.filters.tipo;
 
-      let out = items.filter(it => {
+      let out = state.items.filter(it => {
         if (marca && it.marca !== marca) return false;
         if (tipo && it.tipo !== tipo) return false;
         if (q) {
           const haystack = [
             it.marca, it.modelo, it.nombre, it.tipo,
-            it.descripcion_corta,
-            it._features.join(" ")
+            it.descripcion_corta, it._features.join(" ")
           ].join(" ").toLowerCase();
           if (!haystack.includes(q)) return false;
         }
         return true;
       });
 
-      // Orden
       const sort = state.filters.sort;
       if (sort === "name_asc") {
         out.sort((a,b)=> a.nombre.localeCompare(b.nombre, undefined, { sensitivity:"base" }));
@@ -721,31 +740,63 @@
       return out;
     }
 
-    function setStatus(text) {
-      const status = $("#status");
-      status.textContent = text;
-    }
+    function populateSelectors() {
+      const items = filteredItems();
+      const printerSel = $("#printerSelect");
+      const compareSel = $("#compareSelect");
 
-    function renderList(items) {
-      const grid = $("#grid");
-      grid.innerHTML = "";
-      const frag = document.createDocumentFragment();
-
-      if (!items.length) {
-        const empty = document.createElement("div");
-        empty.className = "status";
-        empty.textContent = "No hay impresoras que coincidan con los filtros.";
-        frag.appendChild(empty);
+      // Repoblar selector de impresora
+      const current = printerSel.value;
+      printerSel.innerHTML = '<option value="">Seleccionar impresora…</option>';
+      for (const it of items) {
+        const opt = document.createElement("option");
+        opt.value = it.id;
+        opt.textContent = it.nombre || `${it.marca} ${it.modelo}`;
+        printerSel.appendChild(opt);
+      }
+      // Mantener selección si sigue disponible; si no, elegir primera
+      if (items.find(x => x.id === current)) {
+        printerSel.value = current;
+        state.selectedId = current;
       } else {
-        for (const it of items) {
-          const node = renderCard(it);
-          frag.appendChild(node);
-        }
+        const first = items[0]?.id || "";
+        printerSel.value = first;
+        state.selectedId = first;
       }
 
-      grid.appendChild(frag);
-      grid.setAttribute("aria-busy", "false");
-      setStatus(`Mostrando ${items.length} de ${state.items.length} impresoras`);
+      // Repoblar selector múltiple de comparación (excluye la seleccionada)
+      const selectedId = state.selectedId;
+      const compareCandidates = items.filter(x => x.id !== selectedId);
+      const prevSelected = new Set(Array.from(compareSel.selectedOptions).map(o => o.value));
+      compareSel.innerHTML = "";
+      for (const it of compareCandidates) {
+        const opt = document.createElement("option");
+        opt.value = it.id;
+        opt.textContent = it.nombre;
+        if (prevSelected.has(it.id)) opt.selected = true;
+        compareSel.appendChild(opt);
+      }
+
+      setStatus(`Catálogo: ${items.length} disponibles — Seleccionada: ${state.selectedId || "ninguna"}`);
+    }
+
+    function renderPrimary() {
+      const container = $("#primaryContainer");
+      container.innerHTML = "";
+      const item = state.items.find(x => x.id === state.selectedId);
+      if (!item) {
+        const msg = document.createElement("div");
+        msg.className = "status";
+        msg.textContent = "No hay impresoras que coincidan con los filtros o no hay selección.";
+        container.appendChild(msg);
+        return;
+      }
+      const node = renderCard(item);
+      // botón "Añadir a comparación" en la card
+      $(".add-to-compare", node).addEventListener("click", () => {
+        addToCompare([item.id]);
+      });
+      container.appendChild(node);
     }
 
     function renderCard(item) {
@@ -759,10 +810,8 @@
       const indicatorEl = $(".indicator", el);
       const prevBtn = $(".prev", el);
       const nextBtn = $(".next", el);
-
       const images = item._images.slice(0, MAX_IMAGES_PER_CARD);
       let idx = 0;
-
       function updateSlide() {
         const src = images[idx];
         imgEl.src = src;
@@ -771,7 +820,6 @@
       }
       function goPrev() { idx = (idx - 1 + images.length) % images.length; updateSlide(); }
       function goNext() { idx = (idx + 1) % images.length; updateSlide(); }
-
       prevBtn.addEventListener("click", goPrev);
       nextBtn.addEventListener("click", goNext);
       carouselEl.addEventListener("keydown", (e) => {
@@ -802,11 +850,7 @@
       if (!item._features.length) feats.classList.add("hidden");
 
       const priceEl = $(".price", el);
-      if (item._precio != null) {
-        priceEl.textContent = formatPrice(item._precio, item.moneda);
-      } else {
-        priceEl.textContent = "";
-      }
+      if (item._precio != null) priceEl.textContent = formatPrice(item._precio, item.moneda);
 
       const sugEl = $(".suggestion", el);
       $(".suggestion-text", sugEl).textContent = item._sugerencia;
@@ -829,28 +873,165 @@
       return el;
     }
 
+    function addToCompare(ids) {
+      const filtered = filteredItems().map(x => x.id);
+      const validIds = ids.filter(id => id && id !== state.selectedId && filtered.includes(id));
+      for (const id of validIds) {
+        if (!state.compareIds.includes(id)) state.compareIds.push(id);
+      }
+      // limitar total (incluyendo la seleccionada)
+      const allowedExtras = Math.max(0, MAX_COMPARE_TOTAL - 1);
+      state.compareIds = state.compareIds.slice(0, allowedExtras);
+      renderCompare();
+    }
+
+    function removeFromCompare(id) {
+      state.compareIds = state.compareIds.filter(x => x !== id);
+      renderCompare();
+    }
+
+    function renderCompare() {
+      const wrap = $("#compareWrap");
+      wrap.innerHTML = "";
+
+      const primary = state.items.find(x => x.id === state.selectedId);
+      if (!primary) {
+        const msg = document.createElement("div");
+        msg.className = "status";
+        msg.textContent = "Selecciona primero una impresora para comparar.";
+        wrap.appendChild(msg);
+        return;
+      }
+
+      const selectedCompare = state.compareIds
+        .map(id => state.items.find(x => x.id === id))
+        .filter(Boolean);
+
+      const items = [primary, ...selectedCompare];
+      const table = buildCompareTable(items);
+      wrap.appendChild(table);
+    }
+
+    function buildCompareTable(items) {
+      // Unión de características
+      const featureSet = new Set();
+      items.forEach(it => it._features.forEach(f => featureSet.add(f)));
+      const featureList = Array.from(featureSet).sort((a,b)=>a.localeCompare(b));
+
+      const fields = [
+        { key: "_name", label: "Nombre" },
+        { key: "marca", label: "Marca" },
+        { key: "modelo", label: "Modelo" },
+        { key: "tipo", label: "Tipo" },
+        { key: "_precioFmt", label: "Precio" },
+        { key: "moneda", label: "Moneda" },
+        { key: "stock", label: "Stock" },
+        { key: "uso_recomendado", label: "Uso recomendado" },
+        { key: "_sugerencia", label: "Sugerencia de compra" },
+        { key: "ultima_actualizacion", label: "Última actualización" },
+      ];
+
+      const t = document.createElement("table");
+      t.className = "compare";
+      t.setAttribute("role","table");
+      const thead = t.createTHead();
+      const hrow = thead.insertRow();
+
+      // Header primera celda (fija)
+      const h0 = document.createElement("th");
+      h0.textContent = "Especificación";
+      h0.className = "sticky";
+      hrow.appendChild(h0);
+
+      // Columnas por impresora
+      for (const it of items) {
+        const th = document.createElement("th");
+        th.innerHTML = `
+          <div><strong>${it.nombre}</strong></div>
+          <div class="muted">${it.marca} ${it.modelo}</div>
+          <div class="col-actions">
+            ${it.url_producto ? `<a class="btn small-btn" href="${it.url_producto}" target="_blank" rel="noopener">Ver en mi sitio</a>` : `<span class="chip">Sin enlace</span>`}
+            ${it.id !== state.selectedId ? `<button class="btn small-btn remove-col" data-id="${it.id}" type="button" title="Quitar de la comparación">Quitar</button>` : `<span class="chip">Seleccionada</span>`}
+          </div>
+        `;
+        hrow.appendChild(th);
+      }
+
+      const tbody = t.createTBody();
+
+      function addRow(label, getter) {
+        const tr = tbody.insertRow();
+        const th = document.createElement("th");
+        th.textContent = label;
+        th.className = "sticky";
+        tr.appendChild(th);
+        for (const it of items) {
+          const td = tr.insertCell();
+          td.innerHTML = getter(it) ?? "—";
+        }
+      }
+
+      // Prepara valores formateados
+      items.forEach(it => {
+        it._name = it.nombre;
+        it._precioFmt = it._precio != null ? formatPrice(it._precio, it.moneda) : "—";
+      });
+
+      // Filas básicas
+      for (const f of fields) {
+        addRow(f.label, (it) => escapeHTML(String(it[f.key] ?? "")));
+      }
+
+      // Descripción corta (opcional)
+      addRow("Descripción", (it) => it.descripcion_corta ? escapeHTML(it.descripcion_corta) : "—");
+
+      // Características (unión)
+      for (const feat of featureList) {
+        addRow(`Caract.: ${feat}`, (it) => it._features.includes(feat) ? "✓" : "—");
+      }
+
+      // Eventos quitar
+      $$(".remove-col", t).forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const id = e.currentTarget.dataset.id;
+          removeFromCompare(id);
+        });
+      });
+
+      return t;
+    }
+
+    function escapeHTML(s) {
+      return s
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#39;");
+    }
+
+    function setStatus(text) {
+      const status = $("#status");
+      status.textContent = text;
+    }
+
     // =========================================================================
-    // EVENTOS: Búsqueda, filtros, orden, limpiar
+    // EVENTOS
     // =========================================================================
     function attachEvents() {
       $("#searchInput").addEventListener("input", debounce((e) => {
         state.filters.search = e.target.value;
         updateUI();
       }, 300));
+      $("#brandFilter").addEventListener("change", (e) => { state.filters.marca = e.target.value; updateUI(); });
+      $("#typeFilter").addEventListener("change",  (e) => { state.filters.tipo  = e.target.value; updateUI(); });
+      $("#sortSelect").addEventListener("change",  (e) => { state.filters.sort  = e.target.value; updateUI(); });
 
-      $("#brandFilter").addEventListener("change", (e) => {
-        state.filters.marca = e.target.value;
-        updateUI();
-      });
-
-      $("#typeFilter").addEventListener("change", (e) => {
-        state.filters.tipo = e.target.value;
-        updateUI();
-      });
-
-      $("#sortSelect").addEventListener("change", (e) => {
-        state.filters.sort = e.target.value;
-        updateUI();
+      $("#printerSelect").addEventListener("change", (e) => {
+        state.selectedId = e.target.value || "";
+        renderPrimary();
+        renderCompare(); // actualiza "seleccionada" en tabla
+        refreshCompareCandidates(); // evita que la seleccionada aparezca como candidata
       });
 
       $("#clearBtn").addEventListener("click", () => {
@@ -859,13 +1040,46 @@
         $("#brandFilter").value = "";
         $("#typeFilter").value = "";
         $("#sortSelect").value = "name_asc";
+        state.selectedId = "";
+        state.compareIds = [];
         updateUI();
+      });
+
+      $("#addToCompareBtn").addEventListener("click", () => {
+        const sel = $("#compareSelect");
+        const ids = Array.from(sel.selectedOptions).map(o => o.value);
+        addToCompare(ids);
+      });
+
+      $("#clearCompareBtn").addEventListener("click", () => {
+        state.compareIds = [];
+        renderCompare();
       });
     }
 
+    function refreshCompareCandidates() {
+      // Mantener selección múltiple lo más posible, pero excluyendo la seleccionada
+      const compareSel = $("#compareSelect");
+      const prev = new Set(Array.from(compareSel.selectedOptions).map(o => o.value));
+      const items = filteredItems().filter(x => x.id !== state.selectedId);
+      compareSel.innerHTML = "";
+      for (const it of items) {
+        const opt = document.createElement("option");
+        opt.value = it.id;
+        opt.textContent = it.nombre;
+        if (prev.has(it.id)) opt.selected = true;
+        compareSel.appendChild(opt);
+      }
+    }
+
     function updateUI() {
-      const filtered = applyFilters(state.items);
-      renderList(filtered);
+      populateSelectors();
+      renderPrimary();
+      // depurar compareIds si ya no están en el set filtrado
+      const allowed = new Set(filteredItems().map(x => x.id));
+      state.compareIds = state.compareIds.filter(id => allowed.has(id) && id !== state.selectedId);
+      refreshCompareCandidates();
+      renderCompare();
     }
 
     // =========================================================================
@@ -879,17 +1093,16 @@
         state.items = items;
         state.medianaPorGrupo = medians;
         buildFilters(items);
+        attachEvents();
         updateUI();
       } catch (err) {
         console.error(err);
         setStatus("Error al cargar datos. Intenta recargar la página.");
-        $("#grid").setAttribute("aria-busy", "false");
+        const container = $("#primaryContainer");
         const msg = document.createElement("div");
         msg.className = "status";
         msg.textContent = "Ocurrió un error inesperado al obtener los datos.";
-        $("#grid").appendChild(msg);
-      } finally {
-        attachEvents();
+        container.appendChild(msg);
       }
     })();
   </script>
@@ -900,15 +1113,15 @@
   =============================================================================
 
   /**
-   * Lee la pestaña "Impresoras" y expone JSON de solo lectura.
+   * Lee la pestaña (por defecto "Impresoras" o la que indiques por query) y expone JSON de solo lectura.
    * Despliegue: Implementar → Nueva implementación → Aplicación web
    *   - Ejecutar como: Tú
    *   - Quién tiene acceso: Cualquiera con el enlace
    *   - Copia la URL /exec en CONFIG.SHEET_JSON_URL
    *
    * Parámetros opcionales:
-   *   - ?id=SPREADSHEET_ID  → si quieres leer otra hoja por ID
-   *   - ?sheet=Impresoras   → si quieres cambiar el nombre de la pestaña
+   *   - ?id=SPREADSHEET_ID    → ID del Google Sheet (si no es el actual)
+   *   - ?sheet=Sheet2          → Nombre de la pestaña (ej: "Sheet2" en tu caso)
    */
   function doGet(e) {
     try {
@@ -917,44 +1130,37 @@
         : SpreadsheetApp.getActiveSpreadsheet();
       const sheetName = (e && e.parameter && e.parameter.sheet) ? e.parameter.sheet : "Impresoras";
       const sh = ss.getSheetByName(sheetName);
-      if (!sh) return jsonResponse({ error: "Sheet not found: " + sheetName });
+      if (!sh) return jsonResponse({ error: "Sheet not found: " + sheetName, data: [] }, 404);
 
-      const range = sh.getDataRange();
-      const values = range.getValues();
-      if (!values || values.length < 2) return jsonResponse({ data: [] });
+      const values = sh.getDataRange().getValues();
+      if (!values || values.length < 2) return jsonResponse({ data: [], sheet: sheetName, count: 0 });
 
       const headers = values[0].map(String);
       const rows = [];
       for (let r = 1; r < values.length; r++) {
         const row = values[r];
-        // descartar filas completamente vacías
         if (row.every(v => v === "" || v == null)) continue;
         const obj = {};
         headers.forEach((h, i) => obj[h] = row[i] == null ? "" : String(row[i]));
         rows.push(obj);
       }
 
-      const payload = {
+      return jsonResponse({
         data: rows,
         updatedAt: new Date().toISOString(),
         sheet: sheetName,
         count: rows.length,
-      };
-      return jsonResponse(payload);
+      });
     } catch (err) {
-      return jsonResponse({ error: String(err) });
+      return jsonResponse({ error: String(err), data: [] }, 500);
     }
   }
 
-  function jsonResponse(obj) {
-    return ContentService
-      .createTextOutput(JSON.stringify(obj))
-      .setMimeType(ContentService.MimeType.JSON);
+  function jsonResponse(obj, code) {
+    const out = ContentService.createTextOutput(JSON.stringify(obj));
+    out.setMimeType(ContentService.MimeType.JSON);
+    return out;
   }
-
-  // Nota: ContentService con GET público suele funcionar bien para CORS simples.
-  // Si necesitas cabeceras personalizadas, evalúa usar HtmlService/DoGet templated
-  // o Cloud Functions/Run.
 
   =============================================================================
   FIN APPS SCRIPT
