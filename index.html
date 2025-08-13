@@ -2,11 +2,11 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <title>Catálogo de Impresoras — simple</title>
+  <title>Catálogo de Impresoras — simple + HUB de comparación</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     /* =========
-       TEMA OSCURO SIMPLE (inspirado en Union, pero minimal)
+       TEMA OSCURO SIMPLE
        ========= */
     :root{
       --bg:#0b0f17; --bg-grad: radial-gradient(70vw 40vh at 20% -10%, #132133 0%, transparent 60%), var(--bg);
@@ -68,8 +68,21 @@
     .features{margin:.35rem 0 .1rem 1.1rem}
     .actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.25rem}
 
-    /* Comparador */
-    .compare-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:#0d1117}
+    /* HUB de comparación (pantalla completa) */
+    .hub[hidden]{display:none}
+    .hub{position:fixed;inset:0;background:rgba(5,7,10,.7);backdrop-filter:blur(6px);display:grid;place-items:center;z-index:1000}
+    .hub__content{width:min(1200px,96vw);height:min(90vh,1000px);border:1px solid var(--line);border-radius:16px;background:var(--panel);box-shadow:var(--shadow);display:grid;grid-template-rows:auto 1fr}
+    .hub__head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
+    .hub__body{display:grid;grid-template-columns:320px 1fr;gap:12px;padding:12px}
+    @media (max-width:960px){.hub__body{grid-template-columns:1fr}}
+    .hub__side{display:grid;grid-template-rows:auto auto 1fr auto;gap:8px}
+    .pill{background:#0b1324;border:1px solid var(--line);border-radius:999px;padding:.25rem .6rem;font-size:.82rem}
+    .hub__search{padding:.45rem .6rem;background:#0d1422;color:var(--text);border:1px solid #223047;border-radius:10px;width:100%}
+    .hub__list{border:1px solid var(--line);border-radius:12px;background:#0d1117;overflow:auto}
+    .hub__item{display:flex;gap:.5rem;align-items:center;padding:8px;border-bottom:1px dashed rgba(255,255,255,.06)}
+    .hub__item:last-child{border-bottom:0}
+    .hub__main{min-width:0}
+    .compare-wrap{overflow-x:auto;border:1px solid var(--line);border-radius: var(--radius);background:#0d1117}
     table.compare{border-collapse:separate;border-spacing:0;width:100%;min-width:720px}
     .compare th,.compare td{border-bottom:1px solid var(--line);padding:.45rem .5rem;vertical-align:top;background:transparent;font-size:.92rem}
     .compare thead th{position:sticky;top:0;background:#0f1524;z-index:1}
@@ -101,28 +114,42 @@
       <ul id="quickList"></ul>
     </aside>
 
-    <!-- Detalle y comparador -->
+    <!-- Detalle -->
     <div style="display:grid;gap:12px;">
       <section class="panel" aria-label="Impresora seleccionada">
         <div class="panel-head"><strong>Impresora seleccionada</strong></div>
         <div class="panel-body"><div id="primaryContainer"></div></div>
       </section>
-
-      <section class="panel" aria-label="Comparador">
-        <div class="panel-head">
-          <strong id="compareSummary">Comparar (0)</strong>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <select id="compareSelect" multiple size="4" class="select" aria-label="Selecciona 1–3 para comparar" style="min-width:220px"></select>
-            <button id="addToCompareBtn" class="btn" type="button">Añadir</button>
-            <button id="clearCompareBtn" class="btn" type="button">Vaciar</button>
-          </div>
-        </div>
-        <div class="panel-body">
-          <div id="compareWrap" class="compare-wrap" aria-live="polite"></div>
-        </div>
-      </section>
+      <!-- (NOTE) El comparador abajo fue removido. Ahora se abre el HUB de comparación. -->
     </div>
   </main>
+
+  <!-- HUB de comparación -->
+  <section id="compareHub" class="hub" role="dialog" aria-modal="true" aria-labelledby="hubTitle" hidden>
+    <div class="hub__content" role="document">
+      <div class="hub__head">
+        <div>
+          <strong id="hubTitle">Comparar productos</strong>
+          <span class="pill" id="hubCount">0 seleccionados (máx. 3 además del principal)</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button id="hubClear" class="btn" type="button">Limpiar</button>
+          <button id="hubClose" class="btn" type="button">Cerrar</button>
+        </div>
+      </div>
+      <div class="hub__body">
+        <aside class="hub__side">
+          <span class="pill">Incluye siempre la impresora seleccionada</span>
+          <input id="hubSearch" class="hub__search" placeholder="Buscar en catálogo…" aria-label="Buscar en lista" />
+          <div id="hubList" class="hub__list" role="listbox" aria-label="Listado para comparar"></div>
+          <small class="pill" style="justify-self:start">Tip: usa clic o barra espaciadora en el ítem para (des)seleccionar</small>
+        </aside>
+        <div class="hub__main">
+          <div id="hubTableWrap" class="compare-wrap" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- Tarjeta -->
   <template id="tpl-card">
@@ -148,7 +175,7 @@
           <ul class="features"></ul>
           <div class="actions" style="margin-top:.25rem;">
             <a class="btn link" target="_blank" rel="noopener">Ver en mi sitio</a>
-            <button class="btn add-to-compare" type="button">Añadir a comparación</button>
+            <button class="btn compare-open" type="button">Comparar productos</button>
           </div>
           <div class="desc" style="margin-top:.25rem;">Última actualización: <span class="updated"></span></div>
         </details>
@@ -156,7 +183,7 @@
     </article>
   </template>
 
-  <footer>Interfaz simplificada. Sin secciones extra. Lista, detalle y comparador.</footer>
+  <footer>Interfaz simplificada. Comparación ahora en HUB pantalla completa con menú lateral.</footer>
 
   <script>
     /* ========= Config ========= */
@@ -184,15 +211,18 @@
         ultima_actualizacion:["Última actualización","actualizado","update_date","last_update","fecha actualización"],
       },
     };
-    const CACHE_KEY = "impresorasCache:simple:v1";
+    const CACHE_KEY = "impresorasCache:simpleHub:v1";
     const MAX_IMAGES_PER_CARD = 6;
-    const MAX_COMPARE_TOTAL = 4;
+    const MAX_COMPARE_TOTAL = 4; // 1 principal + 3
     const MAX_QUICKLIST = 250;
 
     /* ========= Estado ========= */
-    const state = { raw:[], items:[], medianaPorGrupo:{},
+    const state = {
+      raw:[], items:[], medianaPorGrupo:{},
       filters:{search:"",marca:"",tipo:"",sort:"name_asc"},
-      selectedId:"", compareIds:[] };
+      selectedId:"", compareIds:[], // ids extras (excluye la seleccionada)
+      hubSearch:""
+    };
 
     /* ========= Utils ========= */
     const $=(s,r=document)=>r.querySelector(s);
@@ -254,7 +284,7 @@
       return it;
     }
     const computeMedian=arr=>{if(!arr.length)return null;const a=arr.slice().sort((x,y)=>x-y);const m=Math.floor(a.length/2);return a.length%2?a[m]:(a[m-1]+a[m])/2;};
-    function buildMedians(items){const g=new Map();for(const it of items){if(it._precio==null)continue;const k=`${it.marca}|${it.tipo}`;if(!g.has(k))g.set(k,[]);g.get(k).push(it._precio);}const out={};for(const [k,v] of g)out[k]=computeMedian(v);return out;}
+    function buildMedians(items){const g=new Map();for(const it of items){if(it._precio==null)continue;const k=`${it.marca}|${it.tipo}`;if(!g.has(k))g.set(k,[]);g.get(k).push(it._precio);}const out={};for(const [k,v]of g)out[k]=computeMedian(v);return out;}
     function computeSuggestion(it,med){
       if(it.sugerencia_compra) return {text:it.sugerencia_compra, source:"Hoja"};
       if(it.stock==="bajo") return {text:"Comprar pronto: stock limitado", source:"stock=bajo"};
@@ -305,25 +335,25 @@
           </div>
           <div class="row-actions">
             <div class="price">${it._precio!=null?escapeHTML(formatPrice(it._precio,it.moneda)):""}</div>
-            <button class="btn addRow" type="button" title="Añadir a comparación">＋</button>
           </div>`;
-        li.addEventListener("click", e=>{ if(!(e.target.closest(".addRow"))){ state.selectedId=it.id; renderPrimary(); renderCompare(); highlightQuickList(); }});
-        li.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); state.selectedId=it.id; renderPrimary(); renderCompare(); highlightQuickList(); }});
-        li.querySelector(".addRow").addEventListener("click", e=>{ e.stopPropagation(); addToCompare([it.id]); });
+        li.addEventListener("click", ()=>{ state.selectedId=it.id; renderPrimary(); highlightQuickList(); });
+        li.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); state.selectedId=it.id; renderPrimary(); highlightQuickList(); }});
         frag.appendChild(li);
       }
       if(!items.length){ const li=document.createElement("li"); li.innerHTML='<span class="meta">No hay resultados.</span>'; frag.appendChild(li); }
       ul.appendChild(frag);
       $("#status").textContent=`Resultados: ${items.length} · Total: ${state.items.length}`;
-      if(!state.selectedId && items[0]){ state.selectedId=items[0].id; renderPrimary(); renderCompare(); highlightQuickList(); }
+      if(!state.selectedId && items[0]){ state.selectedId=items[0].id; renderPrimary(); highlightQuickList(); }
     }
     function highlightQuickList(){ $$("#quickList li").forEach(li=>li.removeAttribute("aria-current")); const cur=$(`#quickList li[data-id="${CSS.escape(state.selectedId)}"]`); if(cur) cur.setAttribute("aria-current","true"); }
+
     function renderPrimary(){
       const c=$("#primaryContainer"); c.innerHTML="";
       const it=state.items.find(x=>x.id===state.selectedId);
       if(!it){ c.innerHTML='<div class="meta">Selecciona una impresora.</div>'; return; }
       const node=renderCard(it);
-      $(".add-to-compare", node).addEventListener("click",()=> addToCompare([it.id]));
+      // botón principal abre HUB
+      $(".compare-open", node).addEventListener("click", openCompareHub);
       c.appendChild(node);
       highlightQuickList();
     }
@@ -351,22 +381,77 @@
       return el;
     }
 
-    /* ========= Comparador ========= */
-    function addToCompare(ids){
-      const allowed=new Set(filteredItems().map(x=>x.id));
-      const valid=ids.filter(id=>id && id!==state.selectedId && allowed.has(id));
-      for(const id of valid) if(!state.compareIds.includes(id)) state.compareIds.push(id);
-      const allowedExtras=Math.max(0, MAX_COMPARE_TOTAL-1);
-      state.compareIds=state.compareIds.slice(0, allowedExtras);
-      renderCompare();
+    /* ========= HUB de comparación ========= */
+    function openCompareHub(){
+      const hub=$("#compareHub"); hub.hidden=false; document.body.style.overflow="hidden";
+      $("#hubSearch").value = state.hubSearch || "";
+      renderHub();
+      setTimeout(()=>$("#hubSearch").focus(), 0);
     }
-    function removeFromCompare(id){ state.compareIds=state.compareIds.filter(x=>x!==id); renderCompare(); }
-    function renderCompare(){
-      const wrap=$("#compareWrap"); wrap.innerHTML="";
-      const primary=state.items.find(x=>x.id===state.selectedId); if(!primary){ wrap.innerHTML='<div class="meta">Selecciona una impresora.</div>'; return; }
+    function closeCompareHub(){
+      $("#compareHub").hidden=true; document.body.style.overflow="";
+    }
+    function addToCompare(ids){
+      const allowedExtras = Math.max(0, MAX_COMPARE_TOTAL-1);
+      for(const id of ids){
+        if(!id || id===state.selectedId) continue;
+        if(!state.compareIds.includes(id)){
+          if(state.compareIds.length >= allowedExtras) break;
+          state.compareIds.push(id);
+        }
+      }
+    }
+    function removeFromCompare(id){ state.compareIds = state.compareIds.filter(x=>x!==id); renderHub(); }
+    function renderHub(){
+      // Sidebar list
+      const q = ($("#hubSearch").value || "").toLowerCase().trim();
+      state.hubSearch = q;
+      const list = $("#hubList"); list.innerHTML="";
+      const items = state.items.filter(it=>{
+        if(!q) return true;
+        const hay=[it.marca,it.modelo,it.nombre,it.tipo,it._features.join(" ")].join(" ").toLowerCase();
+        return hay.includes(q);
+      });
+      const allowedExtras = Math.max(0, MAX_COMPARE_TOTAL-1);
+      const frag=document.createDocumentFragment();
+      for(const it of items){
+        const row=document.createElement("label"); row.className="hub__item"; row.tabIndex=0;
+        const cb=document.createElement("input"); cb.type="checkbox"; cb.value=it.id;
+        const isPrimary = it.id===state.selectedId;
+        cb.checked = isPrimary ? true : state.compareIds.includes(it.id);
+        cb.disabled = isPrimary;
+        cb.addEventListener("change", ()=>{
+          if(cb.checked){
+            if(!isPrimary){
+              if(state.compareIds.length >= allowedExtras){ cb.checked=false; return; }
+              state.compareIds.push(it.id);
+            }
+          } else {
+            state.compareIds = state.compareIds.filter(x=>x!==it.id);
+          }
+          renderHubMain();
+          updateHubCount();
+        });
+        row.addEventListener("keydown", (e)=>{ if(e.key===" "){ e.preventDefault(); cb.click(); }});
+        const name=document.createElement("span");
+        name.innerHTML = `<strong>${escapeHTML(it.nombre)}</strong> <span class="chip">${escapeHTML(it.marca)}</span>`;
+        if(isPrimary){ const chip=document.createElement("span"); chip.className="chip"; chip.textContent="Seleccionada"; name.append(" ", chip); }
+        row.appendChild(cb); row.appendChild(name);
+        frag.appendChild(row);
+      }
+      if(!items.length){ const empty=document.createElement("div"); empty.className="hub__item"; empty.innerHTML='<span class="muted">Sin resultados</span>'; frag.appendChild(empty); }
+      list.appendChild(frag);
+      updateHubCount();
+      renderHubMain();
+    }
+    function renderHubMain(){
+      const wrap=$("#hubTableWrap"); wrap.innerHTML="";
+      const primary=state.items.find(x=>x.id===state.selectedId); if(!primary){ wrap.innerHTML='<div class="pill">Selecciona primero una impresora.</div>'; return; }
       const cols=[primary, ...state.compareIds.map(id=>state.items.find(x=>x.id===id)).filter(Boolean)];
-      $("#compareSummary").textContent=`Comparar (${cols.length-1})`;
-      wrap.appendChild(buildCompareTable(cols)); refreshCompareCandidates();
+      wrap.appendChild(buildCompareTable(cols));
+    }
+    function updateHubCount(){
+      $("#hubCount").textContent = `${state.compareIds.length} seleccionados (máx. ${Math.max(0, MAX_COMPARE_TOTAL-1)} además del principal)`;
     }
     function buildCompareTable(items){
       const t=document.createElement("table"); t.className="compare"; const thead=t.createTHead(); const hrow=thead.insertRow();
@@ -377,7 +462,7 @@
           <div style="color:var(--muted)">${escapeHTML(it.marca)} ${escapeHTML(it.modelo)}</div>
           <div style="white-space:nowrap;margin-top:.25rem;">
             ${it.url_producto?`<a class="btn" href="${it.url_producto}" target="_blank" rel="noopener">Ver</a>`:`<span class="chip">Sin enlace</span>`}
-            ${it.id!==state.selectedId?` <button class="btn remove-col" data-id="${it.id}" type="button">Quitar</button>`:` <span class="chip">Seleccionada</span>`}
+            ${it.id!==state.selectedId?` <button class="btn remove-col" data-id="${it.id}" type="button">Quitar</button>`:` <span class="chip">Principal</span>`}
           </div>`;
         hrow.appendChild(th);
       }
@@ -395,15 +480,8 @@
       const feats=new Set(); items.forEach(i=>i._features.forEach(f=>feats.add(f)));
       [...feats].sort((a,b)=>a.localeCompare(b)).forEach(f=> add("Caract.: "+f, it=> it._features.includes(f)?"✓":"—") );
       add("Última actualización", it=>escapeHTML(it.ultima_actualizacion||"—"));
-      $$(".remove-col", t).forEach(b=>b.addEventListener("click", e=>removeFromCompare(e.currentTarget.dataset.id)));
+      $$(".remove-col", t).forEach(b=>b.addEventListener("click", e=>{ removeFromCompare(e.currentTarget.dataset.id); }));
       return t;
-    }
-    function refreshCompareCandidates(){
-      const sel=$("#compareSelect");
-      const allowed=filteredItems().filter(x=>x.id!==state.selectedId);
-      const prev=new Set(Array.from(sel.selectedOptions).map(o=>o.value));
-      sel.innerHTML="";
-      for(const it of allowed){const o=document.createElement("option");o.value=it.id;o.textContent=it.nombre;if(prev.has(it.id))o.selected=true;sel.appendChild(o);}
     }
 
     /* ========= Eventos ========= */
@@ -413,24 +491,26 @@
       $("#typeFilter").addEventListener("change",  e=>{state.filters.tipo =e.target.value;updateUI();});
       $("#sortSelect").addEventListener("change",  e=>{state.filters.sort =e.target.value;updateUI();});
 
-      $("#addToCompareBtn").addEventListener("click", ()=>{const ids=Array.from($("#compareSelect").selectedOptions).map(o=>o.value);addToCompare(ids);});
-      $("#clearCompareBtn").addEventListener("click", ()=>{state.compareIds=[];renderCompare();});
-
-      document.addEventListener("keydown",(e)=>{
+      // HUB controls
+      $("#hubSearch").addEventListener("input", debounce(()=>renderHub(),200));
+      $("#hubClose").addEventListener("click", closeCompareHub);
+      $("#hubClear").addEventListener("click", ()=>{ state.compareIds=[]; renderHub(); });
+      document.addEventListener("keydown", (e)=>{
         if(e.key==="/" && !/input|textarea|select/i.test(document.activeElement.tagName)){ e.preventDefault(); $("#searchInput")?.focus(); }
         if(e.altKey && (e.key==="ArrowRight"||e.key==="ArrowLeft")){
           e.preventDefault();
           const list=filteredItems(); const idx=list.findIndex(x=>x.id===state.selectedId);
           if(idx>-1 && list.length){ const nextIdx = e.key==="ArrowRight" ? (idx+1)%list.length : (idx-1+list.length)%list.length;
-            state.selectedId=list[nextIdx].id; renderPrimary(); renderCompare(); highlightQuickList(); }
+            state.selectedId=list[nextIdx].id; renderPrimary(); highlightQuickList(); }
         }
+        if(e.key==="Escape" && !$("#compareHub").hidden) closeCompareHub();
+        if(e.key.toLowerCase()==="c" && $("#compareHub").hidden) openCompareHub();
       });
+      $("#compareHub").addEventListener("click", (e)=>{ if(e.target.id==="compareHub") closeCompareHub(); });
     }
     function updateUI(){
       renderQuickList();
-      const allowed=new Set(filteredItems().map(x=>x.id));
-      state.compareIds=state.compareIds.filter(id=>allowed.has(id) && id!==state.selectedId);
-      renderPrimary(); renderCompare();
+      renderPrimary();
     }
 
     /* ========= Demo fallback ========= */
