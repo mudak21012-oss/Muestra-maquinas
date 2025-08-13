@@ -46,7 +46,9 @@
   ----------------------------------------
   1) En tu Google Sheet: Archivo → Publicar en la Web.
   2) Elige "Hoja" = "Impresoras" y formato "CSV".
+     (Si tu hoja publicada se llama "Sheet2", asegúrate de publicar ESA hoja).
   3) Copia la URL generada y pégala en CONFIG.SHEET_CSV_URL (abajo).
+     En este archivo ya configuré el CSV que nos compartiste.
 
   API JSON CON APPS SCRIPT (Opción B, recomendado)
   ------------------------------------------------
@@ -84,7 +86,7 @@
 
   PRUEBAS MANUALES RÁPIDAS
   ------------------------
-  1) Pega URLs reales en CONFIG (JSON y/o CSV).
+  1) Pega tu URL de Apps Script en CONFIG (opcional) y/o valida que el CSV sea el correcto.
   2) Abre index.html en el navegador (doble clic o con un server estático).
   3) Verifica render con datos reales. Prueba "offline" para ver dataset de ejemplo.
   4) Limpia cache: localStorage.removeItem('impresorasCache:v1') y recarga.
@@ -95,7 +97,7 @@
   - Vanilla JS: Sí (sin frameworks). Si más adelante quieres variante React, se puede.
   - Columnas `tipo` y `uso_recomendado`: asumidas presentes (recomendado crearlas).
   - Moneda: se mostrará la que llegue en `moneda` (con Intl.NumberFormat si posible).
-  - Carrusel: sólo manual (no auto-avanza, para simplicidad y accesibilidad).
+  - Carrusel: sólo manual (no auto-avanza, por simplicidad y accesibilidad).
   - Máx. imágenes por impresora: 6 (configurable, ver MAX_IMAGES_PER_CARD).
   - Tono sugerencia: informativo (no agresivo).
   - i18n: no incluido en este prototipo; textos en ES.
@@ -310,7 +312,8 @@
     // =========================================================================
     const CONFIG = {
       SHEET_JSON_URL: "https://script.google.com/.../exec", // PLACEHOLDER (Apps Script Web App - Opción B)
-      SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/.../pub?gid=0&single=true&output=csv", // PLACEHOLDER (Publicar como CSV - Opción A)
+      // CSV publicado que compartiste (hoja "Sheet2" según indicaste):
+      SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZ-GFIahnmzB09C1GWCvAs1PaNXmpN2_Ed5taWtseTRlqx0P8-ZKJ28TOsvziFOw/pub?output=csv",
       TEMPORADA_CLASES: { inicio: "2025-02-15", fin: "2025-03-31" },
       CACHE_TTL_MS: 1000 * 60 * 60 * 6, // 6 horas
     };
@@ -403,8 +406,7 @@
       };
     }
 
-    function withinDateRange(dateStr, range) {
-      if (!dateStr && dateStr !== 0) { /* not used */ }
+    function withinDateRange(_dateStr, range) {
       const today = new Date();
       const start = new Date(range.inicio + "T00:00:00");
       const end   = new Date(range.fin    + "T23:59:59");
@@ -413,12 +415,11 @@
 
     function parsePrice(value) {
       if (value == null || value === "") return null;
-      // Acepta "12345", "12.345,67" o "12,345.67".
       const s = String(value).trim().replace(/\s+/g, "");
       const normalized = s
-        // Si hay ambos separadores, quitamos los millares.
+        // Si hay separadores de millares, quitarlos. Mantener el decimal final como punto.
         .replace(/(?<=\d)[.,](?=\d{3}\b)/g, "")
-        .replace(",", "."); // decimal como punto
+        .replace(",", ".");
       const n = Number(normalized);
       return Number.isFinite(n) ? n : null;
     }
@@ -502,7 +503,7 @@
     }
 
     async function tryFetchCSV(url) {
-      if (!url || url.includes("/d/.../")) throw new Error("CSV URL placeholder");
+      if (!url) throw new Error("CSV URL vacío");
       const res = await fetch(url, { headers: { "Accept": "text/csv" }});
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const text = await res.text();
@@ -550,6 +551,7 @@
         status.textContent = `Fallo API JSON. Probando CSV… (${e.message})`;
       }
       try {
+        status.textContent = "Consultando CSV publicado…";
         const csvRows = await tryFetchCSV(CONFIG.SHEET_CSV_URL);
         status.textContent = `Datos recibidos de CSV (${csvRows.length})`;
         saveCache(csvRows);
@@ -642,7 +644,7 @@
         return { text: "Esperar reposición", source: "Regla: stock=sin_stock" };
       }
       const key = `${item.marca}|${item.tipo}`;
-      const med = medians[key];
+      const med = medianas[key];
       if (item._precio != null && med != null && item._precio < med) {
         return { text: "Buen momento para comprar", source: "Regla: precio < mediana(marca+tipo)" };
       }
@@ -915,11 +917,11 @@
         : SpreadsheetApp.getActiveSpreadsheet();
       const sheetName = (e && e.parameter && e.parameter.sheet) ? e.parameter.sheet : "Impresoras";
       const sh = ss.getSheetByName(sheetName);
-      if (!sh) return jsonResponse({ error: "Sheet not found: " + sheetName }, 404);
+      if (!sh) return jsonResponse({ error: "Sheet not found: " + sheetName });
 
       const range = sh.getDataRange();
       const values = range.getValues();
-      if (!values || values.length < 2) return jsonResponse({ data: [] }, 200);
+      if (!values || values.length < 2) return jsonResponse({ data: [] });
 
       const headers = values[0].map(String);
       const rows = [];
@@ -938,30 +940,21 @@
         sheet: sheetName,
         count: rows.length,
       };
-      return jsonResponse(payload, 200);
+      return jsonResponse(payload);
     } catch (err) {
-      return jsonResponse({ error: String(err) }, 500);
+      return jsonResponse({ error: String(err) });
     }
   }
 
-  function jsonResponse(obj, code) {
-    const out = ContentService.createTextOutput(JSON.stringify(obj));
-    out.setMimeType(ContentService.MimeType.JSON);
-    const resp = out;
-    // Encabezados CORS
-    const headers = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Cache-Control": "no-cache, max-age=0",
-    };
-    return ContentService.createTextOutput(JSON.stringify(obj))
+  function jsonResponse(obj) {
+    return ContentService
+      .createTextOutput(JSON.stringify(obj))
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  // Nota: Apps Script no permite setear headers arbitrarios en ContentService de forma directa
-  // en todas las versiones. Para CORS simples suele funcionar sin problemas al ser GET anónimo.
-  // Si necesitas más control, usar HtmlService o un deploy de Cloud Functions/Run.
+  // Nota: ContentService con GET público suele funcionar bien para CORS simples.
+  // Si necesitas cabeceras personalizadas, evalúa usar HtmlService/DoGet templated
+  // o Cloud Functions/Run.
 
   =============================================================================
   FIN APPS SCRIPT
