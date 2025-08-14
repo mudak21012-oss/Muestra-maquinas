@@ -10,7 +10,7 @@
       --bg:#0b0f17; --bg-grad: radial-gradient(70vw 40vh at 20% -10%, #132133 0%, transparent 60%), var(--bg);
       --panel:#0e1421; --line:#1f2937; --text:#e6ecff; --muted:#a3acb9;
       --radius:12px; --radius-lg:16px; --shadow:0 6px 28px rgba(0,0,0,.35);
-      --primary-col:#131d2f; --accent:#00ffd0; --accent2:#7aa2ff;
+      --primary-col:#141c2d; --accent:#00ffd0; --accent2:#7aa2ff;
       --img-max: 380px; /* tamaño máx. del cuadrado de imagen */
     }
     *{box-sizing:border-box}
@@ -48,9 +48,9 @@
     .panel{border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--panel);box-shadow:var(--shadow)}
     .panel .panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
     .panel .panel-body{padding:12px}
-    .btn{display:inline-flex;align-items:center;gap:.35rem;padding:.5rem .8rem;border:1px solid #2b3b57;border-radius:10px;background:linear-gradient(135deg,#0f172a,#111827);color:var(--text);cursor:pointer}
+    .btn{display:inline-flex;align-items:center;gap:.35rem;padding:.45rem .75rem;border:1px solid #2b3b57;border-radius:10px;background:linear-gradient(135deg,#0f172a,#111827);color:var(--text);cursor:pointer}
     .btn-cta{
-      border:0;border-radius:12px;padding:.65rem 1.1rem;font-weight:900;letter-spacing:.15px;
+      border:0;border-radius:10px;padding:.55rem .9rem;font-weight:900;letter-spacing:.15px;
       color:#051018;background:linear-gradient(135deg,var(--accent),var(--accent2));
       box-shadow:0 8px 26px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.08);
     }
@@ -60,26 +60,24 @@
     /* Tarjeta: 3 columnas (info | imagen cuadrada | features) */
     .card{
       display:grid;
-      grid-template-columns: 1fr minmax(260px, var(--img-max)) 1fr;
+      grid-template-columns: 1fr minmax(260px, var(--img-max)) 0.9fr;
       gap:12px;border:1px solid var(--line);border-radius:16px;background:#0d1117;padding:12px
     }
     @media (max-width:1080px){.card{grid-template-columns: 1fr}}
     .info-panel{display:grid;align-content:start;gap:8px}
     .title{margin:.1rem 0;font-size:1.1rem;font-weight:800}
     .desc{margin:.15rem 0 .25rem 0;color:var(--muted)}
-    .tags{display:flex;flex-wrap:wrap;gap:.35rem;margin:.2rem 0}
-    .tag{display:inline-flex;padding:.12rem .5rem;border-radius:999px;background:#0f172a;border:1px solid #223047;font-size:.78rem;color:#cfd8ea}
-    .suggestion{display:flex;align-items:center;gap:.5rem;padding:.4rem .6rem;border:1px solid #223047;border-radius:10px;background:#0c121f;font-size:.92rem}
+    .suggestion{display:flex;align-items:center;gap:.5rem;padding:.35rem .55rem;border:1px solid #223047;border-radius:10px;background:#0c121f;font-size:.9rem}
     .suggestion small{color:var(--muted);font-size:.78rem}
     .actions{display:flex;gap:.6rem;flex-wrap:wrap}
+    .updated-bottom{color:var(--muted);font-size:.85rem;margin-top:4px}
 
-    /* Bubble square image (siempre mismo ancho/alto) con “borde gradiente” */
-    .carousel{position:relative;place-self:center;background:#0f1524;aspect-ratio:1/1;border-radius:24px;overflow:hidden;
+    /* Bubble square image con CTAs arriba y chips debajo */
+    .carousel{position:relative;place-self:center;aspect-ratio:1/1;border-radius:24px;overflow:hidden;
       background:linear-gradient(#0f1524,#0f1524) padding-box,
                  linear-gradient(135deg, rgba(122,162,255,.35), rgba(0,255,208,.35)) border-box;
       border:1px solid transparent; box-shadow:0 10px 40px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.03);
-      width:100%; max-width:var(--img-max);
-      display:grid;place-items:center;padding:6px;
+      width:100%; max-width:var(--img-max); display:grid;place-items:center;padding:6px;
     }
     .carousel .stage{position:relative;width:100%;height:100%;border-radius:18px;overflow:hidden}
     .carousel img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block}
@@ -90,13 +88,26 @@
     .carousel .prev{left:.5rem}.carousel .next{right:.5rem}
     .carousel .indicator{position:absolute;bottom:.45rem;left:50%;transform:translateX(-50%);font-size:.8rem;padding:.1rem .6rem;border:1px solid #223047;border-radius:999px;background:#0b1324;z-index:3}
 
-    /* Features (panel compacto a la derecha) */
-    .features-panel{border:1px solid #223047;border-radius:12px;background:#0f1524;padding:10px;display:grid;gap:8px;align-content:start}
+    /* Overlay superior con dos CTAs */
+    .overlay-ctas{
+      position:absolute; left:10px; right:10px; top:10px; z-index:4;
+      display:flex; gap:8px; justify-content:flex-start; align-items:center;
+      background:rgba(11,17,30,.55); backdrop-filter:blur(6px);
+      border:1px solid #223047; border-radius:12px; padding:6px;
+    }
+    .btn-cta-small{padding:.45rem .7rem;border-radius:10px;font-weight:800;color:#051018;background:linear-gradient(135deg,var(--accent),var(--accent2));border:0;white-space:nowrap}
+    .btn-ghost-small{padding:.45rem .7rem;border-radius:10px;background:#0b1324;border:1px solid #223047;color:var(--text);white-space:nowrap}
+
+    /* Chips debajo de la foto */
+    .tags-under{display:flex;justify-content:center;gap:.35rem;flex-wrap:wrap;margin-top:8px}
+    .tag{display:inline-flex;padding:.12rem .5rem;border-radius:999px;background:#0f172a;border:1px solid #223047;font-size:.78rem;color:#cfd8ea}
+
+    /* Features a la derecha */
+    .features-panel{border:1px solid #223047;border-radius:12px;background:#0f1524;padding:10px;display:grid;gap:6px;align-content:start}
     .features-panel h4{margin:0;font-size:.95rem}
     .features{margin:0 0 .1rem 1.1rem}
-    .updated{color:var(--muted)}
 
-    /* HUB de comparación (scroll horizontal y vertical estable) */
+    /* HUB de comparación (scroll sólido) */
     .hub[hidden]{display:none}
     .hub{position:fixed;inset:0;background:rgba(5,7,10,.7);backdrop-filter:blur(6px);display:grid;place-items:center;z-index:1000}
     .hub__content{
@@ -116,17 +127,23 @@
     .hub__main{min-width:0;min-height:0;overflow:auto}
     .compare-wrap{overflow:auto;border:1px solid var(--line);border-radius: var(--radius);background:#0d1117}
 
-    /* Tabla estable con colgroup fijo para evitar “jitter” al scroll horizontal */
+    /* Tabla con colgroup fijo, sticky y sin solaparse (compacta) */
     table.compare{
       table-layout:fixed;border-collapse:separate;border-spacing:0;width:max(100%, 720px);
-      transform:translateZ(0); /* fuerza capa para sticky más suave */
+      transform:translateZ(0);
     }
-    .compare col.sticky-col{width:220px}
-    .compare col.data-col{width:260px}
-    .compare th,.compare td{border-bottom:1px solid var(--line);padding:.52rem .6rem;vertical-align:top;background:transparent;font-size:.92rem}
-    .compare thead th{position:sticky;top:0;background:#0f1524;z-index:3; /* encima del sticky lateral */ }
-    .sticky{position:sticky;left:0;background:#0f1524;z-index:4;border-right:1px solid var(--line);min-width:170px;background-clip:padding-box}
+    .compare col.sticky-col{width:210px}
+    .compare col.data-col{width:250px}
+    .compare th,.compare td{border-bottom:1px solid var(--line);padding:.45rem .55rem;vertical-align:top;background:transparent;font-size:.9rem}
+    .compare thead th{position:sticky;top:0;background:#0f1524;z-index:3}
+    .sticky{
+      position:sticky;left:0;z-index:4;border-right:1px solid var(--line);
+      background:#0f1524; background-clip:padding-box;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      box-shadow: 8px 0 12px -8px rgba(0,0,0,.6) inset; /* separación visual */
+    }
     .is-primary-col{background:var(--primary-col)!important;box-shadow: inset 0 0 0 1px rgba(122,162,255,.35)}
+    .compare tbody tr:nth-child(odd) td:not(.is-primary-col){background:rgba(255,255,255,.01)}
   </style>
 </head>
 <body>
@@ -186,38 +203,43 @@
       <div class="info-panel">
         <h3 class="title"><span class="name"></span></h3>
         <p class="desc"></p>
-        <div class="tags">
-          <span class="tag brand"></span>
-          <span class="tag type"></span>
-          <span class="tag stock"></span>
-          <span class="tag price"></span>
-        </div>
         <div class="suggestion">
           <span class="suggestion-text"></span>
           <small class="suggestion-source"></small>
         </div>
         <div class="actions">
-          <a class="btn-cta link" target="_blank" rel="noopener">Comprar / Ver ficha →</a>
           <button class="btn compare-open" type="button">Comparar productos</button>
         </div>
+        <div class="updated-bottom">Última actualización: <span class="updated-date"></span></div>
       </div>
 
-      <!-- Col 2: imagen cuadrada al centro -->
-      <div class="carousel" tabindex="0" aria-label="Galería de imágenes" aria-live="polite">
-        <div class="stage">
-          <img class="img-bottom" alt="" />
-          <img class="img-top" alt="" />
+      <!-- Col 2: imagen cuadrada con CTAs arriba + chips debajo -->
+      <div>
+        <div class="carousel" tabindex="0" aria-label="Galería de imágenes" aria-live="polite">
+          <div class="overlay-ctas">
+            <a class="btn-cta-small cta-buy" target="_blank" rel="noopener">Comprar</a>
+            <a class="btn-ghost-small cta-view" target="_blank" rel="noopener">Ver ficha</a>
+          </div>
+          <div class="stage">
+            <img class="img-bottom" alt="" />
+            <img class="img-top" alt="" />
+          </div>
+          <button class="btn nav prev" type="button" aria-label="Imagen anterior">◀</button>
+          <div class="indicator" aria-live="polite" aria-atomic="true">1/1</div>
+          <button class="btn nav next" type="button" aria-label="Imagen siguiente">▶</button>
         </div>
-        <button class="btn nav prev" type="button" aria-label="Imagen anterior">◀</button>
-        <div class="indicator" aria-live="polite" aria-atomic="true">1/1</div>
-        <button class="btn nav next" type="button" aria-label="Imagen siguiente">▶</button>
+        <div class="tags-under">
+          <span class="tag brand"></span>
+          <span class="tag type"></span>
+          <span class="tag stock"></span>
+          <span class="tag price"></span>
+        </div>
       </div>
 
       <!-- Col 3: features -->
       <div class="features-panel">
         <h4>Características</h4>
         <ul class="features"></ul>
-        <div class="updated">Última actualización: <span class="updated-date"></span></div>
       </div>
     </article>
   </template>
@@ -245,7 +267,7 @@
         ultima_actualizacion:["Última actualización","actualizado","update_date","last_update","fecha actualización"],
       },
     };
-    const CACHE_KEY = "impresorasCache:hub:v4";
+    const CACHE_KEY = "impresorasCache:hub:v6";
     const MAX_IMAGES_PER_CARD = 6;
     const MAX_COMPARE_TOTAL = 4; // 1 principal + 3
     const MAX_QUICKLIST = 250;
@@ -377,7 +399,7 @@
     function renderCard(item){
       const tpl=$("#tpl-card"); const el=tpl.content.firstElementChild.cloneNode(true);
 
-      /* Carrusel “slice” con dos capas cuadradas */
+      // === Carrusel (slice) ===
       const stage=el.querySelector(".stage");
       const imgBottom=el.querySelector(".img-bottom");
       const imgTop=el.querySelector(".img-top");
@@ -385,36 +407,34 @@
       const ind=el.querySelector(".indicator");
       const images=item._images.slice(0,MAX_IMAGES_PER_CARD);
       let idx=0, activeTop=false;
-
-      function setIndicator(){ ind.textContent=`${idx+1}/${images.length}`; }
-      function setImg(target, src, alt){ target.src=src; target.alt=alt; }
-      function show(index){
-        idx=(index+images.length)%images.length;
+      const setIndicator=()=> ind.textContent=`${idx+1}/${images.length}`;
+      const setImg=(t,src,alt)=>{ t.src=src; t.alt=alt; };
+      const show=(index)=>{ idx=(index+images.length)%images.length;
         const src=images[idx]; const alt=`Foto ${idx+1}/${images.length} — ${item.nombre}`;
-        const toAnimate = activeTop ? imgBottom : imgTop;
-        const under      = activeTop ? imgTop    : imgBottom;
-        setImg(toAnimate, src, alt);
-        toAnimate.classList.remove("slice-in"); void toAnimate.offsetWidth;
-        toAnimate.style.zIndex=2; under.style.zIndex=1;
-        toAnimate.classList.add("slice-in");
-        activeTop = !activeTop; setIndicator();
-      }
+        const toAnimate=activeTop?imgBottom:imgTop, under=activeTop?imgTop:imgBottom;
+        setImg(toAnimate,src,alt); toAnimate.classList.remove("slice-in"); void toAnimate.offsetWidth;
+        toAnimate.style.zIndex=2; under.style.zIndex=1; toAnimate.classList.add("slice-in"); activeTop=!activeTop; setIndicator();
+      };
       setImg(imgBottom, images[0], `Foto 1/${images.length} — ${item.nombre}`); setIndicator();
-      prev.addEventListener("click", ()=>show(idx-1));
-      next.addEventListener("click", ()=>show(idx+1));
+      prev.addEventListener("click", ()=>show(idx-1)); next.addEventListener("click", ()=>show(idx+1));
       stage.parentElement.addEventListener("keydown",e=>{ if(e.key==="ArrowLeft"){e.preventDefault();show(idx-1);} if(e.key==="ArrowRight"){e.preventDefault();show(idx+1);} });
 
-      // Datos
-      el.querySelector(".name").textContent=item.nombre;
-      el.querySelector(".desc").textContent=item.descripcion_corta||"";
+      // Chips + CTAs overlay
       el.querySelector(".brand").textContent=item.marca||"—";
       el.querySelector(".type").textContent=item.tipo||"—";
       el.querySelector(".stock").textContent=({en_stock:"En stock",bajo:"Stock bajo",sin_stock:"Sin stock",bajo_pedido:"Bajo pedido"}[item.stock]||item.stock||"—");
       el.querySelector(".price").textContent=item._precio!=null?formatPrice(item._precio,item.moneda):"";
+      const linkBuy = el.querySelector(".cta-buy");
+      const linkView = el.querySelector(".cta-view");
+      if(item.url_producto){ linkBuy.href=item.url_producto; linkView.href=item.url_producto; } else { linkBuy.href="javascript:void(0)"; linkView.href="javascript:void(0)"; linkBuy.setAttribute("aria-disabled","true"); linkView.setAttribute("aria-disabled","true"); }
+
+      // Datos + features + fecha al final de la columna de información
+      el.querySelector(".name").textContent=item.nombre;
+      el.querySelector(".desc").textContent=item.descripcion_corta||"";
       const feats=el.querySelector(".features"); feats.innerHTML=""; for(const f of item._features){ const li=document.createElement("li"); li.textContent=f; feats.appendChild(li); }
       el.querySelector(".updated-date").textContent=item.ultima_actualizacion||"—";
       const sug=el.querySelector(".suggestion"); sug.querySelector(".suggestion-text").textContent=item._sugerencia; sug.querySelector(".suggestion-source").textContent=item._sugerencia_source; sug.title=item._sugerencia_source;
-      const a=el.querySelector(".link"); if(item.url_producto){ a.href=item.url_producto; } else { a.textContent="Ver ficha"; a.href="javascript:void(0)"; a.setAttribute("aria-disabled","true"); }
+
       return el;
     }
 
@@ -426,27 +446,17 @@
       setTimeout(()=>$("#hubSearch").focus(),0);
     }
     function closeCompareHub(){ $("#compareHub").hidden=true; document.body.style.overflow=""; }
-    function addToCompare(ids){
-      const allowedExtras = Math.max(0, MAX_COMPARE_TOTAL-1);
-      for(const id of ids){
-        if(!id || id===state.selectedId) continue;
-        if(!state.compareIds.includes(id)){
-          if(state.compareIds.length >= allowedExtras) break;
-          state.compareIds.push(id);
-        }
-      }
-    }
     function removeFromCompare(id){ state.compareIds = state.compareIds.filter(x=>x!==id); renderHub(); }
 
     function renderHub(){
       const q = ($("#hubSearch").value || "").toLowerCase().trim();
       state.hubSearch = q;
-      const list = $("#hubList"); list.innerHTML=""; const items = state.items.filter(it=>{
+      const list = $("#hubList"); list.innerHTML="";
+      const items = state.items.filter(it=>{
         if(!q) return true;
         const hay=[it.marca,it.modelo,it.nombre,it.tipo,it._features.join(" ")].join(" ").toLowerCase();
         return hay.includes(q);
       });
-      const allowedExtras = Math.max(0, MAX_COMPARE_TOTAL-1);
       const frag=document.createDocumentFragment();
       for(const it of items){
         const row=document.createElement("label"); row.className="hub__item"; row.tabIndex=0;
@@ -455,14 +465,8 @@
         cb.checked = isPrimary ? true : state.compareIds.includes(it.id);
         cb.disabled = isPrimary;
         cb.addEventListener("change", ()=>{
-          if(cb.checked){
-            if(!isPrimary){
-              if(state.compareIds.length >= allowedExtras){ cb.checked=false; return; }
-              state.compareIds.push(it.id);
-            }
-          } else {
-            state.compareIds = state.compareIds.filter(x=>x!==it.id);
-          }
+          if(cb.checked){ if(!isPrimary){ if(state.compareIds.length >= Math.max(0, MAX_COMPARE_TOTAL-1)){ cb.checked=false; return; } state.compareIds.push(it.id);} }
+          else { state.compareIds = state.compareIds.filter(x=>x!==it.id); }
           renderHubMain(); updateHubCount();
         });
         row.addEventListener("keydown", (e)=>{ if(e.key===" "){ e.preventDefault(); cb.click(); }});
@@ -485,34 +489,29 @@
 
     function buildCompareTable(items){
       const t=document.createElement("table"); t.className="compare";
-
-      // Colgroup: asegura anchos fijos y evita “saltos” al scrollear
-      const colg=document.createElement("colgroup");
-      const c0=document.createElement("col"); c0.className="sticky-col"; colg.appendChild(c0);
+      const colg=document.createElement("colgroup"); const c0=document.createElement("col"); c0.className="sticky-col"; colg.appendChild(c0);
       for(let i=0;i<items.length;i++){ const c=document.createElement("col"); c.className="data-col"; colg.appendChild(c); }
       t.appendChild(colg);
 
       const thead=t.createTHead(); const hrow=thead.insertRow();
-
       const h0=document.createElement("th"); h0.className="sticky"; h0.textContent="Especificación"; hrow.appendChild(h0);
 
       items.forEach((it,idx)=>{
         const th=document.createElement("th");
         if(idx===0) th.classList.add("is-primary-col");
         th.innerHTML=`<div style="display:grid;gap:6px;align-content:start">
-            <div><strong>${escapeHTML(it.nombre)}</strong></div>
-            <div style="color:var(--muted)">${escapeHTML(it.marca)} ${escapeHTML(it.modelo)}</div>
-            <div style="white-space:nowrap;margin-top:.2rem;display:flex;gap:6px;flex-wrap:wrap">
-              ${it.url_producto?`<a class="btn-cta" href="${it.url_producto}" target="_blank" rel="noopener">Comprar / Ver ficha →</a>`:`<span class="chip">Sin enlace</span>`}
-              ${idx!==0?`<button class="btn btn-ghost remove-col" data-id="${it.id}" type="button">Quitar</button>`:`<span class="chip">Principal</span>`}
-            </div>
-          </div>`;
+          <div><strong>${escapeHTML(it.nombre)}</strong></div>
+          <div style="color:var(--muted)">${escapeHTML(it.marca)} ${escapeHTML(it.modelo)}</div>
+          <div style="white-space:nowrap;margin-top:.2rem;display:flex;gap:6px;flex-wrap:wrap">
+            ${it.url_producto?`<a class="btn-cta" href="${it.url_producto}" target="_blank" rel="noopener">Comprar / Ver ficha →</a>`:`<span class="chip">Sin enlace</span>`}
+            ${idx!==0?`<button class="btn btn-ghost remove-col" data-id="${it.id}" type="button">Quitar</button>`:`<span class="chip">Principal</span>`}
+          </div></div>`;
         hrow.appendChild(th);
       });
 
       const tb=t.createTBody();
       const add=(label,get)=>{const tr=tb.insertRow();const th=document.createElement("th");th.className="sticky";th.textContent=label;tr.appendChild(th);
-        items.forEach((it,idx)=>{const td=tr.insertCell(); const html=get(it)??"—"; td.innerHTML=html; if(idx===0) td.classList.add("is-primary-col");});
+        items.forEach((it,idx)=>{const td=tr.insertCell(); td.innerHTML=get(it)??"—"; if(idx===0) td.classList.add("is-primary-col");});
       };
       items.forEach(it=>{it._precioFmt=it._precio!=null?formatPrice(it._precio,it.moneda):"—";});
       add("Nombre", it=>escapeHTML(it.nombre));
@@ -527,15 +526,13 @@
       [...feats].sort((a,b)=>a.localeCompare(b)).forEach(f=> add("Caract.: "+f, it=> it._features.includes(f)?"✓":"—") );
       add("Última actualización", it=>escapeHTML(it.ultima_actualizacion||"—"));
 
-      // listeners
-      $$(".remove-col", t).forEach(b=>b.addEventListener("click", e=>{ removeFromCompare(e.currentTarget.dataset.id); }));
+      $$(".remove-col", t).forEach(b=>b.addEventListener("click", e=>{ state.compareIds = state.compareIds.filter(x=>x!==e.currentTarget.dataset.id); renderHubMain(); updateHubCount(); }));
       return t;
     }
 
     /* ========= Eventos ========= */
     function attachEvents(){
       $("#searchInput").addEventListener("input", e=>{ state.search=e.target.value; updateUI(); });
-
       document.addEventListener("keydown",(e)=>{
         if(e.key==="/" && !/input|textarea|select/i.test(document.activeElement.tagName)){ e.preventDefault(); $("#searchInput")?.focus(); }
         if(e.altKey && (e.key==="ArrowRight"||e.key==="ArrowLeft")){
