@@ -5,12 +5,13 @@
   <title>Catálogo de Impresoras — HUB de comparación</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    /* ========= TEMA OSCURO SIMPLE ========= */
+    /* ========= TEMA OSCURO COMPACTO ========= */
     :root{
       --bg:#0b0f17; --bg-grad: radial-gradient(70vw 40vh at 20% -10%, #132133 0%, transparent 60%), var(--bg);
       --panel:#0e1421; --line:#1f2937; --text:#e6ecff; --muted:#a3acb9;
       --radius:12px; --radius-lg:16px; --shadow:0 6px 28px rgba(0,0,0,.35);
-      --primary-col:#131d2f; --accent:#7aa2ff; --accent2:#00ffd0;
+      --primary-col:#131d2f; --accent:#00ffd0; --accent2:#7aa2ff;
+      --img-max: 380px; /* tamaño máx. del cuadrado de imagen */
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -21,12 +22,12 @@
     /* Header minimal */
     header{position:sticky;top:0;z-index:10;background:rgba(11,15,23,.85);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
     h1{margin:12px;text-align:center;font-size:clamp(20px,4vw,36px);font-weight:800;
-       background:linear-gradient(90deg,#9ae6ff 0%, var(--accent) 40%, var(--accent2) 80%);
+       background:linear-gradient(90deg,#9ae6ff 0%, var(--accent2) 40%, var(--accent) 80%);
        -webkit-background-clip:text;background-clip:text;color:transparent;}
 
     /* Layout principal */
     .layout{display:grid;grid-template-columns:340px 1fr;gap:12px;padding:12px}
-    @media (max-width:960px){.layout{grid-template-columns:1fr}}
+    @media (max-width:1080px){.layout{grid-template-columns:1fr}}
 
     /* Lista rápida */
     .quick{border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--panel);box-shadow:var(--shadow);overflow:hidden;display:grid;grid-template-rows:auto 1fr}
@@ -48,17 +49,39 @@
     .panel .panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
     .panel .panel-body{padding:12px}
     .btn{display:inline-flex;align-items:center;gap:.35rem;padding:.5rem .8rem;border:1px solid #2b3b57;border-radius:10px;background:linear-gradient(135deg,#0f172a,#111827);color:var(--text);cursor:pointer}
-    .btn-cta{border:0;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#08111f;font-weight:800;letter-spacing:.15px;box-shadow:0 6px 20px rgba(0,0,0,.35);padding:.6rem 1rem;border-radius:12px}
-    .btn-cta:hover{filter:brightness(1.05)}
+    .btn-cta{
+      border:0;border-radius:12px;padding:.65rem 1.1rem;font-weight:900;letter-spacing:.15px;
+      color:#051018;background:linear-gradient(135deg,var(--accent),var(--accent2));
+      box-shadow:0 8px 26px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.08);
+    }
+    .btn-cta:hover{filter:brightness(1.06)}
     .btn-ghost{background:#0b1324;border:1px solid #223047}
 
-    /* Tarjeta: 2 columnas (carrusel | info+features) */
-    .card{display:grid;grid-template-columns:minmax(280px,1.2fr) 1.8fr;gap:12px;border:1px solid var(--line);border-radius:12px;background:#0d1117;padding:10px}
-    @media (max-width:980px){.card{grid-template-columns:1fr}}
+    /* Tarjeta: 3 columnas (info | imagen cuadrada | features) */
+    .card{
+      display:grid;
+      grid-template-columns: 1fr minmax(260px, var(--img-max)) 1fr;
+      gap:12px;border:1px solid var(--line);border-radius:16px;background:#0d1117;padding:12px
+    }
+    @media (max-width:1080px){.card{grid-template-columns: 1fr}}
+    .info-panel{display:grid;align-content:start;gap:8px}
+    .title{margin:.1rem 0;font-size:1.1rem;font-weight:800}
+    .desc{margin:.15rem 0 .25rem 0;color:var(--muted)}
+    .tags{display:flex;flex-wrap:wrap;gap:.35rem;margin:.2rem 0}
+    .tag{display:inline-flex;padding:.12rem .5rem;border-radius:999px;background:#0f172a;border:1px solid #223047;font-size:.78rem;color:#cfd8ea}
+    .suggestion{display:flex;align-items:center;gap:.5rem;padding:.4rem .6rem;border:1px solid #223047;border-radius:10px;background:#0c121f;font-size:.92rem}
+    .suggestion small{color:var(--muted);font-size:.78rem}
+    .actions{display:flex;gap:.6rem;flex-wrap:wrap}
 
-    /* Carousel con “slice” */
-    .carousel{position:relative;background:#0f1524;aspect-ratio:4/3;border-radius:12px;overflow:hidden;border:1px solid #223047;display:grid;place-items:center}
-    .carousel .stage{position:relative;width:100%;height:100%}
+    /* Bubble square image (siempre mismo ancho/alto) con “borde gradiente” */
+    .carousel{position:relative;place-self:center;background:#0f1524;aspect-ratio:1/1;border-radius:24px;overflow:hidden;
+      background:linear-gradient(#0f1524,#0f1524) padding-box,
+                 linear-gradient(135deg, rgba(122,162,255,.35), rgba(0,255,208,.35)) border-box;
+      border:1px solid transparent; box-shadow:0 10px 40px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.03);
+      width:100%; max-width:var(--img-max);
+      display:grid;place-items:center;padding:6px;
+    }
+    .carousel .stage{position:relative;width:100%;height:100%;border-radius:18px;overflow:hidden}
     .carousel img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block}
     .carousel .img-top{z-index:2;clip-path:inset(0 100% 0 0)}
     @keyframes sliceIn{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
@@ -67,27 +90,19 @@
     .carousel .prev{left:.5rem}.carousel .next{right:.5rem}
     .carousel .indicator{position:absolute;bottom:.45rem;left:50%;transform:translateX(-50%);font-size:.8rem;padding:.1rem .6rem;border:1px solid #223047;border-radius:999px;background:#0b1324;z-index:3}
 
-    .title{margin:.1rem 0;font-size:1.1rem;font-weight:800}
-    .desc{margin:.15rem 0 .35rem 0;color:var(--muted)}
-    .tags{display:flex;flex-wrap:wrap;gap:.35rem;margin:.2rem 0}
-    .tag{display:inline-flex;padding:.12rem .5rem;border-radius:999px;background:#0f172a;border:1px solid #223047;font-size:.78rem;color:#cfd8ea}
-    .suggestion{display:flex;align-items:center;gap:.5rem;padding:.4rem .6rem;border:1px solid #223047;border-radius:10px;background:#0c121f;font-size:.92rem;margin:.35rem 0}
-    .suggestion small{color:var(--muted);font-size:.78rem}
-    .actions{display:flex;gap:.6rem;flex-wrap:wrap;margin:.35rem 0 .6rem 0}
-
-    /* Features ahora dentro de la misma columna (no lateral) */
-    .features-panel{border:1px solid #223047;border-radius:10px;background:#0f1524;padding:10px}
-    .features-panel h4{margin:0 0 6px 0;font-size:.95rem}
+    /* Features (panel compacto a la derecha) */
+    .features-panel{border:1px solid #223047;border-radius:12px;background:#0f1524;padding:10px;display:grid;gap:8px;align-content:start}
+    .features-panel h4{margin:0;font-size:.95rem}
     .features{margin:0 0 .1rem 1.1rem}
-    .updated{color:var(--muted);margin-top:.35rem}
+    .updated{color:var(--muted)}
 
-    /* HUB de comparación (pantalla completa con scroll robusto) */
+    /* HUB de comparación (scroll horizontal y vertical estable) */
     .hub[hidden]{display:none}
     .hub{position:fixed;inset:0;background:rgba(5,7,10,.7);backdrop-filter:blur(6px);display:grid;place-items:center;z-index:1000}
     .hub__content{
       width:min(1200px,96vw);height:min(90vh,1000px);
       border:1px solid var(--line);border-radius:16px;background:var(--panel);box-shadow:var(--shadow);
-      display:grid;grid-template-rows:auto 1fr;min-height:0; /* permite scroll interno */
+      display:grid;grid-template-rows:auto 1fr;min-height:0;
     }
     .hub__head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
     .pill{background:#0b1324;border:1px solid var(--line);border-radius:999px;padding:.25rem .6rem;font-size:.82rem}
@@ -98,12 +113,19 @@
     .hub__list{border:1px solid var(--line);border-radius:12px;background:#0d1117;overflow:auto;min-height:0}
     .hub__item{display:flex;gap:.5rem;align-items:center;padding:8px;border-bottom:1px dashed rgba(255,255,255,.06)}
     .hub__item:last-child{border-bottom:0}
-    .hub__main{min-width:0;min-height:0;overflow:auto} /* scroll vertical */
+    .hub__main{min-width:0;min-height:0;overflow:auto}
     .compare-wrap{overflow:auto;border:1px solid var(--line);border-radius: var(--radius);background:#0d1117}
-    table.compare{border-collapse:separate;border-spacing:0;width:100%;min-width:720px}
+
+    /* Tabla estable con colgroup fijo para evitar “jitter” al scroll horizontal */
+    table.compare{
+      table-layout:fixed;border-collapse:separate;border-spacing:0;width:max(100%, 720px);
+      transform:translateZ(0); /* fuerza capa para sticky más suave */
+    }
+    .compare col.sticky-col{width:220px}
+    .compare col.data-col{width:260px}
     .compare th,.compare td{border-bottom:1px solid var(--line);padding:.52rem .6rem;vertical-align:top;background:transparent;font-size:.92rem}
-    .compare thead th{position:sticky;top:0;background:#0f1524;z-index:1}
-    .sticky{position:sticky;left:0;background:#0f1524;z-index:2;border-right:1px solid var(--line);min-width:170px}
+    .compare thead th{position:sticky;top:0;background:#0f1524;z-index:3; /* encima del sticky lateral */ }
+    .sticky{position:sticky;left:0;background:#0f1524;z-index:4;border-right:1px solid var(--line);min-width:170px;background-clip:padding-box}
     .is-primary-col{background:var(--primary-col)!important;box-shadow: inset 0 0 0 1px rgba(122,162,255,.35)}
   </style>
 </head>
@@ -160,19 +182,8 @@
   <!-- Tarjeta -->
   <template id="tpl-card">
     <article class="card">
-      <!-- Col 1: carrusel -->
-      <div class="carousel" tabindex="0" aria-label="Galería de imágenes" aria-live="polite">
-        <div class="stage">
-          <img class="img-bottom" alt="" />
-          <img class="img-top" alt="" />
-        </div>
-        <button class="btn nav prev" type="button" aria-label="Imagen anterior">◀</button>
-        <div class="indicator" aria-live="polite" aria-atomic="true">1/1</div>
-        <button class="btn nav next" type="button" aria-label="Imagen siguiente">▶</button>
-      </div>
-
-      <!-- Col 2: info + features en la misma sección -->
-      <div>
+      <!-- Col 1: info -->
+      <div class="info-panel">
         <h3 class="title"><span class="name"></span></h3>
         <p class="desc"></p>
         <div class="tags">
@@ -186,15 +197,27 @@
           <small class="suggestion-source"></small>
         </div>
         <div class="actions">
-          <a class="btn-cta link" target="_blank" rel="noopener">Ver producto →</a>
+          <a class="btn-cta link" target="_blank" rel="noopener">Comprar / Ver ficha →</a>
           <button class="btn compare-open" type="button">Comparar productos</button>
         </div>
+      </div>
 
-        <div class="features-panel">
-          <h4>Características</h4>
-          <ul class="features"></ul>
-          <div class="updated">Última actualización: <span class="updated-date"></span></div>
+      <!-- Col 2: imagen cuadrada al centro -->
+      <div class="carousel" tabindex="0" aria-label="Galería de imágenes" aria-live="polite">
+        <div class="stage">
+          <img class="img-bottom" alt="" />
+          <img class="img-top" alt="" />
         </div>
+        <button class="btn nav prev" type="button" aria-label="Imagen anterior">◀</button>
+        <div class="indicator" aria-live="polite" aria-atomic="true">1/1</div>
+        <button class="btn nav next" type="button" aria-label="Imagen siguiente">▶</button>
+      </div>
+
+      <!-- Col 3: features -->
+      <div class="features-panel">
+        <h4>Características</h4>
+        <ul class="features"></ul>
+        <div class="updated">Última actualización: <span class="updated-date"></span></div>
       </div>
     </article>
   </template>
@@ -222,7 +245,7 @@
         ultima_actualizacion:["Última actualización","actualizado","update_date","last_update","fecha actualización"],
       },
     };
-    const CACHE_KEY = "impresorasCache:hub:v3";
+    const CACHE_KEY = "impresorasCache:hub:v4";
     const MAX_IMAGES_PER_CARD = 6;
     const MAX_COMPARE_TOTAL = 4; // 1 principal + 3
     const MAX_QUICKLIST = 250;
@@ -233,13 +256,12 @@
     /* ========= Utils ========= */
     const $=(s,r=document)=>r.querySelector(s);
     const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
-    const debounce=(fn,d=150)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),d);};};
     const withinDateRange=(_d,r)=>{const t=new Date(),s=new Date(r.inicio+"T00:00:00"),e=new Date(r.fin+"T23:59:59");return t>=s&&t<=e;};
     function parsePrice(v){if(v==null||v==="")return null;const s=String(v).trim().replace(/\s+/g,"").replace(/(?<=\d)[.,](?=\d{3}\b)/g,"").replace(",",".");const n=Number(s);return Number.isFinite(n)?n:null;}
     function formatPrice(n,c){if(n==null)return"";try{if(c)return new Intl.NumberFormat(undefined,{style:"currency",currency:c}).format(n);}catch(_){ }return new Intl.NumberFormat(undefined).format(n)+(c?` ${c}`:"");}
     function parseCSVToObjects(txt){const rows=[];let i=0,field="",row=[],q=false;const endF=()=>{row.push(field);field="";},endR=()=>{rows.push(row);row=[];};while(i<txt.length){const c=txt[i];if(q){if(c=='"'){if(txt[i+1]=='"'){field+='"';i++;}else q=false;}else field+=c;}else{if(c=='"')q=true;else if(c==",")endF();else if(c=="\n"){endF();endR();}else if(c!="\r")field+=c;}i++;}endF();endR();const headers=rows.shift()?.map(h=>(h||"").trim())||[];return rows.filter(r=>r.some(v=>(v||"").trim()!=="")).map(r=>{const o={};headers.forEach((h,idx)=>o[h]=(r[idx]??"").trim());return o;});}
     const initials=(a,b="")=>{const p=[a,b].filter(Boolean).join(" ").split(/\s+/).filter(Boolean);return (p[0]?.[0]||"P").toUpperCase()+(p[1]?.[0]||"R").toUpperCase();};
-    const placeholderDataURI=(t="PR")=>"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"><rect width="100%" height="100%" fill="#101826"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="system-ui" font-size="160" fill="#6b7280" font-weight="700">${t}</text></svg>`);
+    const placeholderDataURI=(t="PR")=>"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200"><rect width="100%" height="100%" rx="44" ry="44" fill="#101826"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="system-ui" font-size="200" fill="#6b7280" font-weight="700">${t}</text></svg>`);
     const escapeHTML=s=>s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
     const _normKey=s=>String(s||"").normalize?.("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"").trim();
     const _buildHeaderIndex=r=>{const i={};Object.keys(r||{}).forEach(k=>i[_normKey(k)]=k);return i;};
@@ -310,7 +332,7 @@
 
     /* ========= Filtros + render ========= */
     function filteredItems(){
-      const q=state.search.toLowerCase().trim();
+      const q=(state.search||"").toLowerCase().trim();
       let out=state.items.filter(it=>{
         if(!q) return true;
         const hay=[it.marca,it.modelo,it.nombre,it.tipo,it.descripcion_corta,it._features.join(" ")].join(" ").toLowerCase();
@@ -355,7 +377,7 @@
     function renderCard(item){
       const tpl=$("#tpl-card"); const el=tpl.content.firstElementChild.cloneNode(true);
 
-      /* Carrusel “slice” con dos capas */
+      /* Carrusel “slice” con dos capas cuadradas */
       const stage=el.querySelector(".stage");
       const imgBottom=el.querySelector(".img-bottom");
       const imgTop=el.querySelector(".img-top");
@@ -366,25 +388,21 @@
 
       function setIndicator(){ ind.textContent=`${idx+1}/${images.length}`; }
       function setImg(target, src, alt){ target.src=src; target.alt=alt; }
-      function show(index, dir=1){
+      function show(index){
         idx=(index+images.length)%images.length;
         const src=images[idx]; const alt=`Foto ${idx+1}/${images.length} — ${item.nombre}`;
-        // Preparar top layer con animación
         const toAnimate = activeTop ? imgBottom : imgTop;
         const under      = activeTop ? imgTop    : imgBottom;
         setImg(toAnimate, src, alt);
-        // reset anim
-        toAnimate.classList.remove("slice-in");
-        void toAnimate.offsetWidth; // reflow
+        toAnimate.classList.remove("slice-in"); void toAnimate.offsetWidth;
         toAnimate.style.zIndex=2; under.style.zIndex=1;
         toAnimate.classList.add("slice-in");
-        activeTop = !activeTop;
-        setIndicator();
+        activeTop = !activeTop; setIndicator();
       }
       setImg(imgBottom, images[0], `Foto 1/${images.length} — ${item.nombre}`); setIndicator();
-      prev.addEventListener("click", ()=>show(idx-1,-1));
-      next.addEventListener("click", ()=>show(idx+1, 1));
-      stage.parentElement.addEventListener("keydown",e=>{ if(e.key==="ArrowLeft"){e.preventDefault();show(idx-1,-1);} if(e.key==="ArrowRight"){e.preventDefault();show(idx+1,1);} });
+      prev.addEventListener("click", ()=>show(idx-1));
+      next.addEventListener("click", ()=>show(idx+1));
+      stage.parentElement.addEventListener("keydown",e=>{ if(e.key==="ArrowLeft"){e.preventDefault();show(idx-1);} if(e.key==="ArrowRight"){e.preventDefault();show(idx+1);} });
 
       // Datos
       el.querySelector(".name").textContent=item.nombre;
@@ -396,7 +414,7 @@
       const feats=el.querySelector(".features"); feats.innerHTML=""; for(const f of item._features){ const li=document.createElement("li"); li.textContent=f; feats.appendChild(li); }
       el.querySelector(".updated-date").textContent=item.ultima_actualizacion||"—";
       const sug=el.querySelector(".suggestion"); sug.querySelector(".suggestion-text").textContent=item._sugerencia; sug.querySelector(".suggestion-source").textContent=item._sugerencia_source; sug.title=item._sugerencia_source;
-      const a=el.querySelector(".link"); if(item.url_producto){ a.href=item.url_producto; } else { a.textContent="Ver producto"; a.href="javascript:void(0)"; a.setAttribute("aria-disabled","true"); }
+      const a=el.querySelector(".link"); if(item.url_producto){ a.href=item.url_producto; } else { a.textContent="Ver ficha"; a.href="javascript:void(0)"; a.setAttribute("aria-disabled","true"); }
       return el;
     }
 
@@ -466,19 +484,32 @@
     function updateHubCount(){ $("#hubCount").textContent = `${state.compareIds.length} seleccionados (máx. ${Math.max(0, MAX_COMPARE_TOTAL-1)} además del principal)`; }
 
     function buildCompareTable(items){
-      const t=document.createElement("table"); t.className="compare"; const thead=t.createTHead(); const hrow=thead.insertRow();
+      const t=document.createElement("table"); t.className="compare";
+
+      // Colgroup: asegura anchos fijos y evita “saltos” al scrollear
+      const colg=document.createElement("colgroup");
+      const c0=document.createElement("col"); c0.className="sticky-col"; colg.appendChild(c0);
+      for(let i=0;i<items.length;i++){ const c=document.createElement("col"); c.className="data-col"; colg.appendChild(c); }
+      t.appendChild(colg);
+
+      const thead=t.createTHead(); const hrow=thead.insertRow();
+
       const h0=document.createElement("th"); h0.className="sticky"; h0.textContent="Especificación"; hrow.appendChild(h0);
+
       items.forEach((it,idx)=>{
         const th=document.createElement("th");
         if(idx===0) th.classList.add("is-primary-col");
-        th.innerHTML=`<div><strong>${escapeHTML(it.nombre)}</strong></div>
-          <div style="color:var(--muted)">${escapeHTML(it.marca)} ${escapeHTML(it.modelo)}</div>
-          <div style="white-space:nowrap;margin-top:.25rem;">
-            ${it.url_producto?`<a class="btn-cta" href="${it.url_producto}" target="_blank" rel="noopener">Ver producto →</a>`:`<span class="chip">Sin enlace</span>`}
-            ${idx!==0?` <button class="btn btn-ghost remove-col" data-id="${it.id}" type="button">Quitar</button>`:` <span class="chip">Principal</span>`}
+        th.innerHTML=`<div style="display:grid;gap:6px;align-content:start">
+            <div><strong>${escapeHTML(it.nombre)}</strong></div>
+            <div style="color:var(--muted)">${escapeHTML(it.marca)} ${escapeHTML(it.modelo)}</div>
+            <div style="white-space:nowrap;margin-top:.2rem;display:flex;gap:6px;flex-wrap:wrap">
+              ${it.url_producto?`<a class="btn-cta" href="${it.url_producto}" target="_blank" rel="noopener">Comprar / Ver ficha →</a>`:`<span class="chip">Sin enlace</span>`}
+              ${idx!==0?`<button class="btn btn-ghost remove-col" data-id="${it.id}" type="button">Quitar</button>`:`<span class="chip">Principal</span>`}
+            </div>
           </div>`;
         hrow.appendChild(th);
       });
+
       const tb=t.createTBody();
       const add=(label,get)=>{const tr=tb.insertRow();const th=document.createElement("th");th.className="sticky";th.textContent=label;tr.appendChild(th);
         items.forEach((it,idx)=>{const td=tr.insertCell(); const html=get(it)??"—"; td.innerHTML=html; if(idx===0) td.classList.add("is-primary-col");});
@@ -495,13 +526,14 @@
       const feats=new Set(); items.forEach(i=>i._features.forEach(f=>feats.add(f)));
       [...feats].sort((a,b)=>a.localeCompare(b)).forEach(f=> add("Caract.: "+f, it=> it._features.includes(f)?"✓":"—") );
       add("Última actualización", it=>escapeHTML(it.ultima_actualizacion||"—"));
+
+      // listeners
       $$(".remove-col", t).forEach(b=>b.addEventListener("click", e=>{ removeFromCompare(e.currentTarget.dataset.id); }));
       return t;
     }
 
     /* ========= Eventos ========= */
     function attachEvents(){
-      // Filtrado en vivo (sin menú desplegable)
       $("#searchInput").addEventListener("input", e=>{ state.search=e.target.value; updateUI(); });
 
       document.addEventListener("keydown",(e)=>{
@@ -515,7 +547,7 @@
         if(e.key==="Escape" && !$("#compareHub").hidden) closeCompareHub();
         if(e.key.toLowerCase()==="c" && $("#compareHub").hidden) openCompareHub();
       });
-      $("#hubSearch").addEventListener("input", debounce(()=>renderHub(),150));
+      $("#hubSearch").addEventListener("input", ()=>renderHub());
       $("#hubClose").addEventListener("click", closeCompareHub);
       $("#hubClear").addEventListener("click", ()=>{ state.compareIds=[]; renderHub(); });
       $("#compareHub").addEventListener("click", (e)=>{ if(e.target.id==="compareHub") closeCompareHub(); });
@@ -532,7 +564,8 @@
     /* ========= Init ========= */
     (async function init(){
       try{
-        const rows=await loadDataWithFallback();
+        const cache=loadCache(); const rows=cache||await loadDataWithFallback();
+        if(!cache) saveCache(rows);
         const {items,medians}=transformAll(rows);
         state.items=items; state.medianaPorGrupo=medians;
         attachEvents(); updateUI();
