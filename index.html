@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <title>Catálogo de Impresoras — simple + HUB de comparación</title>
+  <title>Catálogo de Impresoras — HUB de comparación</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     /* ========= TEMA OSCURO SIMPLE ========= */
@@ -10,22 +10,22 @@
       --bg:#0b0f17; --bg-grad: radial-gradient(70vw 40vh at 20% -10%, #132133 0%, transparent 60%), var(--bg);
       --panel:#0e1421; --line:#1f2937; --text:#e6ecff; --muted:#a3acb9;
       --radius:12px; --radius-lg:16px; --shadow:0 6px 28px rgba(0,0,0,.35);
-      --primary-col:#131d2f;
+      --primary-col:#131d2f; --accent:#7aa2ff; --accent2:#00ffd0;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{margin:0;background:var(--bg-grad);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Arial}
-    a{color:inherit}
+    a{color:inherit;text-decoration:none}
     :focus-visible{outline:0;box-shadow:0 0 0 3px rgba(122,162,255,.35);border-radius:8px}
 
     /* Header minimal */
     header{position:sticky;top:0;z-index:10;background:rgba(11,15,23,.85);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
     h1{margin:12px;text-align:center;font-size:clamp(20px,4vw,36px);font-weight:800;
-       background:linear-gradient(90deg,#9ae6ff 0%, #7aa2ff 40%, #00ffd0 80%);
+       background:linear-gradient(90deg,#9ae6ff 0%, var(--accent) 40%, var(--accent2) 80%);
        -webkit-background-clip:text;background-clip:text;color:transparent;}
 
     /* Layout principal */
-    .layout{display:grid;grid-template-columns:320px 1fr;gap:12px;padding:12px}
+    .layout{display:grid;grid-template-columns:340px 1fr;gap:12px;padding:12px}
     @media (max-width:960px){.layout{grid-template-columns:1fr}}
 
     /* Lista rápida */
@@ -34,7 +34,7 @@
     .q-top{display:flex;align-items:center;gap:8px;justify-content:space-between;margin-bottom:6px}
     .q-title{font-weight:700}
     .status{font-size:.8rem;color:var(--text);background:#0b1324;border:1px solid var(--line);border-radius:10px;padding:.15rem .45rem;white-space:nowrap}
-    .input{width:100%;padding:.48rem .6rem;background:#0d1422;color:var(--text);border:1px solid #223047;border-radius:10px}
+    .input{width:100%;padding:.52rem .68rem;background:#0d1422;color:var(--text);border:1px solid #223047;border-radius:10px}
     .quick ul{list-style:none;margin:0;padding:0;max-height:60vh;overflow:auto}
     .quick li{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px dashed rgba(255,255,255,.06);cursor:pointer}
     .quick li[aria-current="true"]{background:#0f172a}
@@ -47,56 +47,61 @@
     .panel{border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--panel);box-shadow:var(--shadow)}
     .panel .panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
     .panel .panel-body{padding:12px}
-    .btn{display:inline-flex;align-items:center;gap:.25rem;padding:.4rem .6rem;border:1px solid #2b3b57;border-radius:999px;background:linear-gradient(135deg,#0f172a,#111827);color:var(--text);cursor:pointer}
+    .btn{display:inline-flex;align-items:center;gap:.35rem;padding:.5rem .8rem;border:1px solid #2b3b57;border-radius:10px;background:linear-gradient(135deg,#0f172a,#111827);color:var(--text);cursor:pointer}
+    .btn-cta{border:0;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#08111f;font-weight:800;letter-spacing:.15px;box-shadow:0 6px 20px rgba(0,0,0,.35);padding:.6rem 1rem;border-radius:12px}
+    .btn-cta:hover{filter:brightness(1.05)}
+    .btn-ghost{background:#0b1324;border:1px solid #223047}
 
-    /* Tarjeta: 3 columnas (carrusel | info | detalles al lado) */
-    .card{
-      display:grid;
-      grid-template-columns: minmax(260px,1.1fr) 1.2fr 0.9fr;
-      gap:12px;border:1px solid var(--line);border-radius:12px;background:#0d1117;padding:10px
-    }
-    @media (max-width:1100px){ .card{grid-template-columns: 1fr 1fr} .details-aside{grid-column: 1 / -1} }
-    @media (max-width:720px){ .card{grid-template-columns:1fr} }
+    /* Tarjeta: 2 columnas (carrusel | info+features) */
+    .card{display:grid;grid-template-columns:minmax(280px,1.2fr) 1.8fr;gap:12px;border:1px solid var(--line);border-radius:12px;background:#0d1117;padding:10px}
+    @media (max-width:980px){.card{grid-template-columns:1fr}}
 
-    .carousel{position:relative;background:#0f1524;min-height:260px;border-radius:10px;overflow:hidden;border:1px solid #223047}
-    .carousel img{width:100%;height:100%;object-fit:cover;display:block}
-    .carousel .nav{position:absolute;top:50%;transform:translateY(-50%);background:#0b1324;border:1px solid #223047;border-radius:999px;padding:.2rem .4rem}
-    .carousel .prev{left:.35rem}.carousel .next{right:.35rem}
-    .carousel .indicator{position:absolute;bottom:.35rem;left:50%;transform:translateX(-50%);font-size:.8rem;padding:.05rem .5rem;border:1px solid #223047;border-radius:999px;background:#0b1324}
+    /* Carousel con “slice” */
+    .carousel{position:relative;background:#0f1524;aspect-ratio:4/3;border-radius:12px;overflow:hidden;border:1px solid #223047;display:grid;place-items:center}
+    .carousel .stage{position:relative;width:100%;height:100%}
+    .carousel img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+    .carousel .img-top{z-index:2;clip-path:inset(0 100% 0 0)}
+    @keyframes sliceIn{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+    .carousel .slice-in{animation:sliceIn .45s ease forwards}
+    .carousel .nav{position:absolute;top:50%;transform:translateY(-50%);background:#0b1324;border:1px solid #223047;border-radius:999px;padding:.25rem .5rem;z-index:3}
+    .carousel .prev{left:.5rem}.carousel .next{right:.5rem}
+    .carousel .indicator{position:absolute;bottom:.45rem;left:50%;transform:translateX(-50%);font-size:.8rem;padding:.1rem .6rem;border:1px solid #223047;border-radius:999px;background:#0b1324;z-index:3}
 
-    .title{margin:.1rem 0;font-size:1.05rem;font-weight:800}
-    .desc{margin:.1rem 0;color:var(--muted)}
-    .tags{display:flex;flex-wrap:wrap;gap:.35rem;margin:.25rem 0}
-    .tag{display:inline-flex;padding:.1rem .45rem;border-radius:999px;background:#0f172a;border:1px solid #223047;font-size:.78rem;color:#cfd8ea}
-    .suggestion{display:flex;align-items:center;gap:.5rem;padding:.3rem .45rem;border:1px solid #223047;border-radius:10px;background:#0c121f;font-size:.9rem;margin-top:.25rem}
+    .title{margin:.1rem 0;font-size:1.1rem;font-weight:800}
+    .desc{margin:.15rem 0 .35rem 0;color:var(--muted)}
+    .tags{display:flex;flex-wrap:wrap;gap:.35rem;margin:.2rem 0}
+    .tag{display:inline-flex;padding:.12rem .5rem;border-radius:999px;background:#0f172a;border:1px solid #223047;font-size:.78rem;color:#cfd8ea}
+    .suggestion{display:flex;align-items:center;gap:.5rem;padding:.4rem .6rem;border:1px solid #223047;border-radius:10px;background:#0c121f;font-size:.92rem;margin:.35rem 0}
     .suggestion small{color:var(--muted);font-size:.78rem}
-    .actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.4rem}
+    .actions{display:flex;gap:.6rem;flex-wrap:wrap;margin:.35rem 0 .6rem 0}
 
-    /* Panel de detalles lateral (reemplaza desplegable) */
-    .details-aside{border:1px solid #223047;border-radius:10px;background:#0f1524;padding:10px;display:grid;grid-template-rows:auto 1fr auto;gap:8px;min-height:260px}
-    .details-aside h4{margin:0 0 4px 0;font-size:.95rem}
-    .features{margin:0 0 .1rem 1rem;overflow:auto;max-height:260px}
-    .updated{color:var(--muted)}
+    /* Features ahora dentro de la misma columna (no lateral) */
+    .features-panel{border:1px solid #223047;border-radius:10px;background:#0f1524;padding:10px}
+    .features-panel h4{margin:0 0 6px 0;font-size:.95rem}
+    .features{margin:0 0 .1rem 1.1rem}
+    .updated{color:var(--muted);margin-top:.35rem}
 
-    /* HUB de comparación (pantalla completa) */
+    /* HUB de comparación (pantalla completa con scroll robusto) */
     .hub[hidden]{display:none}
     .hub{position:fixed;inset:0;background:rgba(5,7,10,.7);backdrop-filter:blur(6px);display:grid;place-items:center;z-index:1000}
-    .hub__content{width:min(1200px,96vw);height:min(90vh,1000px);border:1px solid var(--line);border-radius:16px;background:var(--panel);box-shadow:var(--shadow);display:grid;grid-template-rows:auto 1fr}
+    .hub__content{
+      width:min(1200px,96vw);height:min(90vh,1000px);
+      border:1px solid var(--line);border-radius:16px;background:var(--panel);box-shadow:var(--shadow);
+      display:grid;grid-template-rows:auto 1fr;min-height:0; /* permite scroll interno */
+    }
     .hub__head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
     .pill{background:#0b1324;border:1px solid var(--line);border-radius:999px;padding:.25rem .6rem;font-size:.82rem}
-    .hub__body{display:grid;grid-template-columns:340px 1fr;gap:12px;padding:12px}
+    .hub__body{display:grid;grid-template-columns:360px 1fr;gap:12px;padding:12px;min-height:0}
     @media (max-width:960px){.hub__body{grid-template-columns:1fr}}
-    .hub__search{padding:.45rem .6rem;background:#0d1422;color:var(--text);border:1px solid #223047;border-radius:10px;width:100%}
     .hub__side{display:grid;grid-template-rows:auto auto 1fr auto;gap:8px;min-height:0}
+    .hub__search{padding:.5rem .6rem;background:#0d1422;color:var(--text);border:1px solid #223047;border-radius:10px;width:100%}
     .hub__list{border:1px solid var(--line);border-radius:12px;background:#0d1117;overflow:auto;min-height:0}
     .hub__item{display:flex;gap:.5rem;align-items:center;padding:8px;border-bottom:1px dashed rgba(255,255,255,.06)}
     .hub__item:last-child{border-bottom:0}
-    .hub__main{min-width:0}
-
-    /* Tabla de comparación */
-    .compare-wrap{overflow-x:auto;border:1px solid var(--line);border-radius: var(--radius);background:#0d1117}
+    .hub__main{min-width:0;min-height:0;overflow:auto} /* scroll vertical */
+    .compare-wrap{overflow:auto;border:1px solid var(--line);border-radius: var(--radius);background:#0d1117}
     table.compare{border-collapse:separate;border-spacing:0;width:100%;min-width:720px}
-    .compare th,.compare td{border-bottom:1px solid var(--line);padding:.45rem .5rem;vertical-align:top;background:transparent;font-size:.92rem}
+    .compare th,.compare td{border-bottom:1px solid var(--line);padding:.52rem .6rem;vertical-align:top;background:transparent;font-size:.92rem}
     .compare thead th{position:sticky;top:0;background:#0f1524;z-index:1}
     .sticky{position:sticky;left:0;background:#0f1524;z-index:2;border-right:1px solid var(--line);min-width:170px}
     .is-primary-col{background:var(--primary-col)!important;box-shadow: inset 0 0 0 1px rgba(122,162,255,.35)}
@@ -106,7 +111,7 @@
   <header><h1>Catálogo de Impresoras</h1></header>
 
   <main class="layout">
-    <!-- Lista rápida (buscador arriba) -->
+    <!-- Lista rápida (buscador arriba que filtra en vivo) -->
     <aside class="quick" aria-label="Lista rápida">
       <header>
         <div class="q-top">
@@ -134,8 +139,8 @@
           <span class="pill" id="hubCount">0 seleccionados (máx. 3 además del principal)</span>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
-          <button id="hubClear" class="btn" type="button">Limpiar</button>
-          <button id="hubClose" class="btn" type="button">Cerrar</button>
+          <button id="hubClear" class="btn btn-ghost" type="button">Limpiar</button>
+          <button id="hubClose" class="btn btn-ghost" type="button">Cerrar</button>
         </div>
       </div>
       <div class="hub__body">
@@ -143,7 +148,7 @@
           <span class="pill">Incluye siempre la impresora seleccionada</span>
           <input id="hubSearch" class="hub__search" placeholder="Buscar en catálogo…" aria-label="Buscar en lista" />
           <div id="hubList" class="hub__list" role="listbox" aria-label="Listado para comparar"></div>
-          <small class="pill" style="justify-self:start">Tip: clic o barra espaciadora para (des)seleccionar</small>
+          <small class="pill" style="justify-self:start">Clic o barra espaciadora para (des)seleccionar</small>
         </aside>
         <div class="hub__main">
           <div id="hubTableWrap" class="compare-wrap" aria-live="polite"></div>
@@ -152,18 +157,21 @@
     </div>
   </section>
 
-  <!-- Tarjeta (con panel lateral de detalles visible) -->
+  <!-- Tarjeta -->
   <template id="tpl-card">
     <article class="card">
       <!-- Col 1: carrusel -->
       <div class="carousel" tabindex="0" aria-label="Galería de imágenes" aria-live="polite">
+        <div class="stage">
+          <img class="img-bottom" alt="" />
+          <img class="img-top" alt="" />
+        </div>
         <button class="btn nav prev" type="button" aria-label="Imagen anterior">◀</button>
-        <img class="slide" loading="lazy" decoding="async" alt="" />
         <div class="indicator" aria-live="polite" aria-atomic="true">1/1</div>
         <button class="btn nav next" type="button" aria-label="Imagen siguiente">▶</button>
       </div>
 
-      <!-- Col 2: info principal -->
+      <!-- Col 2: info + features en la misma sección -->
       <div>
         <h3 class="title"><span class="name"></span></h3>
         <p class="desc"></p>
@@ -178,17 +186,16 @@
           <small class="suggestion-source"></small>
         </div>
         <div class="actions">
-          <a class="btn link" target="_blank" rel="noopener">Ver en mi sitio</a>
+          <a class="btn-cta link" target="_blank" rel="noopener">Ver producto →</a>
           <button class="btn compare-open" type="button">Comparar productos</button>
         </div>
-      </div>
 
-      <!-- Col 3: detalles al lado -->
-      <aside class="details-aside" aria-label="Detalles">
-        <h4>Características</h4>
-        <ul class="features"></ul>
-        <div class="updated">Última actualización: <span class="updated-date"></span></div>
-      </aside>
+        <div class="features-panel">
+          <h4>Características</h4>
+          <ul class="features"></ul>
+          <div class="updated">Última actualización: <span class="updated-date"></span></div>
+        </div>
+      </div>
     </article>
   </template>
 
@@ -201,16 +208,13 @@
       TEMPORADA_CLASES: { inicio: "2025-02-15", fin: "2025-03-31" },
       CACHE_TTL_MS: 1000 * 60 * 60 * 6,
       HEADER_ALIASES: {
-        id:["ID","uuid","Uid","id_producto"],
-        marca:["Marca","brand","Brand","Fabricante"],
-        modelo:["Modelo","model","Model"],
-        nombre:["Nombre","titulo","Título","producto","Producto"],
+        id:["ID","uuid","Uid","id_producto"], marca:["Marca","brand","Brand","Fabricante"],
+        modelo:["Modelo","model","Model"], nombre:["Nombre","titulo","Título","producto","Producto"],
         tipo:["Tipo","tecnologia","Tecnología","technology","Tecnologia"],
         descripcion_corta:["descripcion","Descripción","descripcion breve","Descripción corta","resumen"],
         caracteristicas:["caracteristicas","Características","features","especificaciones","atributos"],
         imagenes:["imagenes","Imágenes","fotos","Fotos","images","image_urls","galeria","Galería","Imagen 1","Imagen1"],
-        precio:["Precio","price","Price","importe","valor","coste","costo"],
-        moneda:["Moneda","currency","Currency"],
+        precio:["Precio","price","Price","importe","valor","coste","costo"], moneda:["Moneda","currency","Currency"],
         url_producto:["url","URL","enlace","link","Link","url producto","URL producto","producto_url"],
         stock:["Stock","disponibilidad","availability","inventario","estado stock"],
         uso_recomendado:["uso","Uso","segmento","Uso recomendado","target"],
@@ -218,21 +222,18 @@
         ultima_actualizacion:["Última actualización","actualizado","update_date","last_update","fecha actualización"],
       },
     };
-    const CACHE_KEY = "impresorasCache:simpleHub:v2";
+    const CACHE_KEY = "impresorasCache:hub:v3";
     const MAX_IMAGES_PER_CARD = 6;
     const MAX_COMPARE_TOTAL = 4; // 1 principal + 3
     const MAX_QUICKLIST = 250;
 
     /* ========= Estado ========= */
-    const state = {
-      items:[], medianaPorGrupo:{},
-      search:"", selectedId:"", compareIds:[], hubSearch:""
-    };
+    const state = { items:[], medianaPorGrupo:{}, search:"", selectedId:"", compareIds:[], hubSearch:"" };
 
     /* ========= Utils ========= */
     const $=(s,r=document)=>r.querySelector(s);
     const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
-    const debounce=(fn,d=250)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),d);};};
+    const debounce=(fn,d=150)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),d);};};
     const withinDateRange=(_d,r)=>{const t=new Date(),s=new Date(r.inicio+"T00:00:00"),e=new Date(r.fin+"T23:59:59");return t>=s&&t<=e;};
     function parsePrice(v){if(v==null||v==="")return null;const s=String(v).trim().replace(/\s+/g,"").replace(/(?<=\d)[.,](?=\d{3}\b)/g,"").replace(",",".");const n=Number(s);return Number.isFinite(n)?n:null;}
     function formatPrice(n,c){if(n==null)return"";try{if(c)return new Intl.NumberFormat(undefined,{style:"currency",currency:c}).format(n);}catch(_){ }return new Intl.NumberFormat(undefined).format(n)+(c?` ${c}`:"");}
@@ -350,16 +351,41 @@
       $(".compare-open", node).addEventListener("click", openCompareHub);
       c.appendChild(node);
     }
+
     function renderCard(item){
       const tpl=$("#tpl-card"); const el=tpl.content.firstElementChild.cloneNode(true);
-      // Carrusel
-      const car=el.querySelector(".carousel"), img=el.querySelector(".slide"), ind=el.querySelector(".indicator");
-      const prev=el.querySelector(".prev"), next=el.querySelector(".next"); const images=item._images.slice(0,MAX_IMAGES_PER_CARD); let i=0;
-      const update=()=>{ img.src=images[i]; img.alt=`Foto ${i+1}/${images.length} — ${item.nombre}`; ind.textContent=`${i+1}/${images.length}`; };
-      const goP=()=>{ i=(i-1+images.length)%images.length; update(); }, goN=()=>{ i=(i+1)%images.length; update(); };
-      prev.addEventListener("click",goP); next.addEventListener("click",goN);
-      car.addEventListener("keydown",e=>{ if(e.key==="ArrowLeft"){e.preventDefault();goP();} if(e.key==="ArrowRight"){e.preventDefault();goN();} });
-      update();
+
+      /* Carrusel “slice” con dos capas */
+      const stage=el.querySelector(".stage");
+      const imgBottom=el.querySelector(".img-bottom");
+      const imgTop=el.querySelector(".img-top");
+      const prev=el.querySelector(".prev"), next=el.querySelector(".next");
+      const ind=el.querySelector(".indicator");
+      const images=item._images.slice(0,MAX_IMAGES_PER_CARD);
+      let idx=0, activeTop=false;
+
+      function setIndicator(){ ind.textContent=`${idx+1}/${images.length}`; }
+      function setImg(target, src, alt){ target.src=src; target.alt=alt; }
+      function show(index, dir=1){
+        idx=(index+images.length)%images.length;
+        const src=images[idx]; const alt=`Foto ${idx+1}/${images.length} — ${item.nombre}`;
+        // Preparar top layer con animación
+        const toAnimate = activeTop ? imgBottom : imgTop;
+        const under      = activeTop ? imgTop    : imgBottom;
+        setImg(toAnimate, src, alt);
+        // reset anim
+        toAnimate.classList.remove("slice-in");
+        void toAnimate.offsetWidth; // reflow
+        toAnimate.style.zIndex=2; under.style.zIndex=1;
+        toAnimate.classList.add("slice-in");
+        activeTop = !activeTop;
+        setIndicator();
+      }
+      setImg(imgBottom, images[0], `Foto 1/${images.length} — ${item.nombre}`); setIndicator();
+      prev.addEventListener("click", ()=>show(idx-1,-1));
+      next.addEventListener("click", ()=>show(idx+1, 1));
+      stage.parentElement.addEventListener("keydown",e=>{ if(e.key==="ArrowLeft"){e.preventDefault();show(idx-1,-1);} if(e.key==="ArrowRight"){e.preventDefault();show(idx+1,1);} });
+
       // Datos
       el.querySelector(".name").textContent=item.nombre;
       el.querySelector(".desc").textContent=item.descripcion_corta||"";
@@ -370,7 +396,7 @@
       const feats=el.querySelector(".features"); feats.innerHTML=""; for(const f of item._features){ const li=document.createElement("li"); li.textContent=f; feats.appendChild(li); }
       el.querySelector(".updated-date").textContent=item.ultima_actualizacion||"—";
       const sug=el.querySelector(".suggestion"); sug.querySelector(".suggestion-text").textContent=item._sugerencia; sug.querySelector(".suggestion-source").textContent=item._sugerencia_source; sug.title=item._sugerencia_source;
-      const a=el.querySelector(".link"); if(item.url_producto){ a.href=item.url_producto; } else { a.textContent="Sin enlace"; a.href="javascript:void(0)"; a.setAttribute("aria-disabled","true"); }
+      const a=el.querySelector(".link"); if(item.url_producto){ a.href=item.url_producto; } else { a.textContent="Ver producto"; a.href="javascript:void(0)"; a.setAttribute("aria-disabled","true"); }
       return el;
     }
 
@@ -395,7 +421,6 @@
     function removeFromCompare(id){ state.compareIds = state.compareIds.filter(x=>x!==id); renderHub(); }
 
     function renderHub(){
-      // Sidebar
       const q = ($("#hubSearch").value || "").toLowerCase().trim();
       state.hubSearch = q;
       const list = $("#hubList"); list.innerHTML=""; const items = state.items.filter(it=>{
@@ -443,19 +468,17 @@
     function buildCompareTable(items){
       const t=document.createElement("table"); t.className="compare"; const thead=t.createTHead(); const hrow=thead.insertRow();
       const h0=document.createElement("th"); h0.className="sticky"; h0.textContent="Especificación"; hrow.appendChild(h0);
-      // encabezados por columna
       items.forEach((it,idx)=>{
         const th=document.createElement("th");
         if(idx===0) th.classList.add("is-primary-col");
         th.innerHTML=`<div><strong>${escapeHTML(it.nombre)}</strong></div>
           <div style="color:var(--muted)">${escapeHTML(it.marca)} ${escapeHTML(it.modelo)}</div>
           <div style="white-space:nowrap;margin-top:.25rem;">
-            ${it.url_producto?`<a class="btn" href="${it.url_producto}" target="_blank" rel="noopener">Ver</a>`:`<span class="chip">Sin enlace</span>`}
-            ${idx!==0?` <button class="btn remove-col" data-id="${it.id}" type="button">Quitar</button>`:` <span class="chip">Principal</span>`}
+            ${it.url_producto?`<a class="btn-cta" href="${it.url_producto}" target="_blank" rel="noopener">Ver producto →</a>`:`<span class="chip">Sin enlace</span>`}
+            ${idx!==0?` <button class="btn btn-ghost remove-col" data-id="${it.id}" type="button">Quitar</button>`:` <span class="chip">Principal</span>`}
           </div>`;
         hrow.appendChild(th);
       });
-      // cuerpo
       const tb=t.createTBody();
       const add=(label,get)=>{const tr=tb.insertRow();const th=document.createElement("th");th.className="sticky";th.textContent=label;tr.appendChild(th);
         items.forEach((it,idx)=>{const td=tr.insertCell(); const html=get(it)??"—"; td.innerHTML=html; if(idx===0) td.classList.add("is-primary-col");});
@@ -478,7 +501,9 @@
 
     /* ========= Eventos ========= */
     function attachEvents(){
-      $("#searchInput").addEventListener("input", debounce(e=>{state.search=e.target.value;updateUI();},300));
+      // Filtrado en vivo (sin menú desplegable)
+      $("#searchInput").addEventListener("input", e=>{ state.search=e.target.value; updateUI(); });
+
       document.addEventListener("keydown",(e)=>{
         if(e.key==="/" && !/input|textarea|select/i.test(document.activeElement.tagName)){ e.preventDefault(); $("#searchInput")?.focus(); }
         if(e.altKey && (e.key==="ArrowRight"||e.key==="ArrowLeft")){
@@ -490,7 +515,7 @@
         if(e.key==="Escape" && !$("#compareHub").hidden) closeCompareHub();
         if(e.key.toLowerCase()==="c" && $("#compareHub").hidden) openCompareHub();
       });
-      $("#hubSearch").addEventListener("input", debounce(()=>renderHub(),200));
+      $("#hubSearch").addEventListener("input", debounce(()=>renderHub(),150));
       $("#hubClose").addEventListener("click", closeCompareHub);
       $("#hubClear").addEventListener("click", ()=>{ state.compareIds=[]; renderHub(); });
       $("#compareHub").addEventListener("click", (e)=>{ if(e.target.id==="compareHub") closeCompareHub(); });
